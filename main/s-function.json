@@ -1,5 +1,5 @@
 {
-  "name": "post-function-test",
+  "name": "main",
   "runtime": "nodejs4.3",
   "description": "Serverless Lambda function for project: hackathon-2016",
   "customName": false,
@@ -13,8 +13,8 @@
   },
   "endpoints": [
     {
-      "path": "post-function-test",
-      "method": "GET",
+      "path": "main",
+      "method": "POST",
       "type": "AWS",
       "authorizationType": "none",
       "authorizerFunction": false,
