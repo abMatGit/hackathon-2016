@@ -11,7 +11,7 @@ var AWS = require('aws-sdk');
 var qs = require('querystring');
 var token, kmsEncyptedToken;
 
-kmsEncyptedToken = "CiDW440/VM2MfOqfynzRZtgDXPyh0f9dsXta46rGATW7WBKfAQEBAgB41uONP1TNjHzqn8p80WbYA1z8odH/XbF7WuOqxgE1u1gAAAB2MHQGCSqGSIb3DQEHBqBnMGUCAQAwYAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAxuWX2EDSRMSMqUtZcCARCAMzz9o0Kyr8MMF3+H2Prx+u/og5mi4jxQ7/MWYvv94o/Q/7KYnjMi71fEoI+y0Yml2ou2vQ==";
+kmsEncyptedToken = "CiDW440/VM2MfOqfynzRZtgDXPyh0f9dsXta46rGATW7WBKfAQEBAgB41uONP1TNjHzqn8p80WbYA1z8odH/XbF7WuOqxgE1u1gAAAB2MHQGCSqGSIb3DQEHBqBnMGUCAQAwYAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwWvAkHtUVOUUzWASMCARCAM25NO0XPlV8HgWylaVSeiB7WXKPGSfFdEbNYOTTmN99gjgDOUSKY6dPLElANVJ0jWIlZqw==";
 
 
 module.exports.handler = function (event, context, cb) {
@@ -50,6 +50,7 @@ var processEvent = function(event, context) {
     var command = params.command;
     var channel = params.channel_name;
     var commandText = params.text;
+    var msg = user + " invoked " + command + " in " + channel + " with the following text: " + commandText;
 
-    context.succeed(user + " invoked " + command + " in " + channel + " with the following text: " + commandText);
+    context.succeed({"text" : msg});
 };
