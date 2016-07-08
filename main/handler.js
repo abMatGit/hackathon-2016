@@ -4,6 +4,7 @@ var AWS = require('aws-sdk');
 var qs = require('querystring');
 var commands = require('./lib/commands');
 var token, kmsEncyptedToken;
+var hardCodedTasks;
 
 kmsEncyptedToken = "CiDW440/VM2MfOqfynzRZtgDXPyh0f9dsXta46rGATW7WBKfAQEBAgB41uONP1TNjHzqn8p80WbYA1z8odH/XbF7WuOqxgE1u1gAAAB2MHQGCSqGSIb3DQEHBqBnMGUCAQAwYAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwWvAkHtUVOUUzWASMCARCAM25NO0XPlV8HgWylaVSeiB7WXKPGSfFdEbNYOTTmN99gjgDOUSKY6dPLElANVJ0jWIlZqw==";
 
@@ -59,6 +60,42 @@ var processEvent = function(event, context) {
 };
 
 var runCommand = function (name, args, params, context) {
+    if (!hardCodedTasks) {
+        hardCodedTasks = {
+            "IOS-1617" : {
+                title: "FullStack “analysis of technique” screen",
+                status: "blocker",
+                owner: "alan",
+                dependsOn: ["IOS-1619"]
+            },
+            "IOS-1619" : {
+                title: "Integrate stats into “analysis of technique” screen",
+                status: "partial",
+                owner: "brandon",
+                dependsOn: ["IOS-1707", "IOS-1618"]
+            },
+            "IOS-1707" : {
+                title: "UI for 'Analysis of technique' screen",
+                status: "done",
+                owner: "sonia",
+                dependsOn: []
+            },
+            "IOS-1618" : {
+                title: "Retrieve stats for speed/accuracy challenge",
+                status: "done",
+                owner: "amat",
+                dependsOn: []
+            },
+            "IOS-1620" : {
+                title: "UI “Challenge yourself” screen",
+                status: "blocker",
+                owner: "foo",
+                dependsOn: []
+            }
+        };
+    }
+    params.autobot.tasks = hardCodedTasks;
+
     getCommandFromName(name, function (err, cmd) {
         if (err) {
             console.error("Command retrieval error: " + err);

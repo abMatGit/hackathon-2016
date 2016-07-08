@@ -4,35 +4,9 @@ var autobot = require('./autobot');
 
 module.exports = {
     omg: function (args, params, context) {
-        var tasks = {
-            "IOS-1617" : {
-                title: "task a",
-                status: "blocker",
-                owner: "alan",
-                dependsOn: ["IOS-1619"]
-            },
-            "IOS-1619" : {
-                title: "task b",
-                status: "partial",
-                owner: "brandon",
-                dependsOn: ["IOS-1707", "IOS-1618"]
-            },
-            "IOS-1707" : {
-                title: "task c",
-                status: "done",
-                owner: "sonia",
-                dependsOn: []
-            },
-            "IOS-1618" : {
-                title: "task d",
-                status: "done",
-                owner: "amat",
-                dependsOn: []
-            }
-        };
 
         var msg = {
-            text: autobot.drawTasks(tasks)
+            text: autobot.drawTasks(params.autobot.tasks)
         };
 
         context.succeed(msg);
