@@ -108,11 +108,7 @@ var statusCommand = function (args, params, context) {
       ":heart: Blocker :yellow_heart: Partially done, but not a blocker :green_heart: Done"
     ];
 
-    var msg = chunks.join("\n");
-
-    context.succeed({
-      "text" : msg
-    });
+    context.succeed(stringToMessage(chunks.join("\n")));
 };
 
 var testCommand = function (args, params, context) {
@@ -134,10 +130,11 @@ var testCommand = function (args, params, context) {
     dynamo.putItem(dynamo_params, function(err, data) {
         if (err) {
             console.error("error message: " + err);
-            context.done('error','putting item into dynamodb failed: '+err);
-        }
-        else {
-            console.log('great success: '+JSON.stringify(data, null, '  '));
+            context.fail(stringToMessage(err));
+        } else {
+            var result = JSON.stringify(data, null, '  ');
+            console.log('great success: '+ result);
+            context.succeed(stringToMessage(result));
         }
     });
 };
