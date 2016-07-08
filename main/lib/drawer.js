@@ -12,12 +12,15 @@ module.exports.jiraLink = function(story) {
     return "<https://lumoslabs.atlassian.net/browse/" + story + "|" + story +">";
 };
 
-function joinStrings(a, b) {
-    return a + " " + b;
+function joinStrings(a, b, joiner) {
+    if (!joiner) {
+        joiner = " ";
+    }
+    return a + joiner + b;
 }
 
 module.exports.body = function(task) {
-    return joinStrings(task.title, task.owner);
+    return joinStrings(task.title, task.owner, " | ");
 };
 
 module.exports.statusEmoji = function(task) {

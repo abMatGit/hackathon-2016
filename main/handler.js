@@ -94,6 +94,7 @@ var runCommand = function (name, args, params, context) {
             }
         };
     }
+
     params.autobot = {
         tasks: hardCodedTasks
     };
