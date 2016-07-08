@@ -1,13 +1,8 @@
 'use strict';
 
-//module.exports.handler = function(event, context, cb) {
-//  var text = (event.text === undefined ? "No text" : event.text);
-//  return cb(null, {
-//    message: 'Go Serverless! Your message is: ' + text
-//  });
-//};
-
 var AWS = require('aws-sdk');
+var doc = require('dynamodb-doc');
+var dynamo = new doc.DynamoDB();
 var qs = require('querystring');
 var token, kmsEncyptedToken;
 
@@ -46,11 +41,31 @@ var processEvent = function(event, context) {
         context.fail("Invalid request token");
     }
 
+    // Dynamo Stuff
+    var tableName = "hackathon";
+    var datetime = new Date().getTime().toString();
+
     var user = params.user_name;
     var command = params.command;
     var channel = params.channel_name;
     var commandText = params.text;
     var msg = user + " invoked " + command + " in " + channel + " with the following text: " + commandText;
+    var dyno_user = { "user": user, "command": commandText }
+    console.log(JSON.stringify(dyno_user));
+    var dynamo_params = {
+      "TableName": tableName,
+      "Item" : { "user": JSON.stringify(dyno_user, null, '  ') }
+    }
+
+    dynamo.putItem(dynamo_params, function(err, data) {
+        if (err) {
+            console.error("error message: " + err);
+            context.done('error','putting item into dynamodb failed: '+err);
+        }
+        else {
+            console.log('great success: '+JSON.stringify(data, null, '  '));
+        }
+    });
 
     context.succeed({"text" : msg});
 };
