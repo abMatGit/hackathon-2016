@@ -1,29 +1,28 @@
 var assert = require('chai').assert;
 var Parser = require('../main/lib/parser');
-
-console.log(Parser);
+var d = require('../main/lib/drawer');
 
 var tasks = {
     "IOS-1617" : {
-        title: "Full stack 'analysis of technique' screen",
+        title: "task a",
         status: "blocker",
         owner: "alan",
         dependsOn: ["IOS-1619"]
     },
     "IOS-1619" : {
-        title: "Integrate stats into 'analysis of technique' screen",
+        title: "task b",
         status: "partial",
         owner: "brandon",
         dependsOn: ["IOS-1707", "IOS-1618"]
     },
     "IOS-1707" : {
-        title: "UI for 'analysis of technique' screen",
+        title: "task c",
         status: "done",
         owner: "sonia",
         dependsOn: []
     },
     "IOS-1618" : {
-        title: "UI for 'analysis of technique' screen",
+        title: "task d",
         status: "done",
         owner: "amat",
         dependsOn: []
@@ -50,5 +49,23 @@ describe('Parser', function() {
 
             assert.deepEqual(Parser.getDrawingInstructions(tasks), expected);
         });
+    });
+});
+
+describe('Drawer', function () {
+    it('draws padding and shanannigansnsgaz', function () {
+        var task = 'IOS-1618';
+
+        var result = d.draw({
+            padding: 1, task: task
+        }, tasks);
+
+        var expected = [
+            d.ARROW,
+            d.DONE,
+            d.jiraLink(task),
+            d.body(tasks[task])].join(" ");
+
+        assert.equal(result, expected);
     });
 });
