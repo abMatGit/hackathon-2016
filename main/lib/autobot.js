@@ -1,5 +1,5 @@
-var Parser = require('./lib/parser');
-var Drawer = require('./lib/drawer');
+var Parser = require('./parser');
+var Drawer = require('./drawer');
 
 module.exports.drawTasks = function (tasks) {
     var instructions = Parser.getDrawingInstructions(tasks);
