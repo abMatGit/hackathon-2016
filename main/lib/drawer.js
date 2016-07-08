@@ -39,6 +39,8 @@ module.exports.draw = function (instruction, tasks) {
 
     if (instruction.padding > 0) {
         retString = this.ARROW;
+    } else {
+        retString = "";
     }
 
     for (var i = 0, l = instruction.padding - 1; i < l; i ++) {
