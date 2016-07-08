@@ -4,7 +4,7 @@
   "description": "Serverless Lambda function for project: hackathon-2016",
   "customName": false,
   "customRole": false,
-  "handler": "handler.handler",
+  "handler": "main/handler.handler",
   "timeout": 6,
   "memorySize": 1024,
   "authorizer": {},
