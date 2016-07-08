@@ -1,6 +1,6 @@
 var doc = require('dynamodb-doc');
 var dynamo = new doc.DynamoDB();
-var autobot = require('./lib/autobot');
+var autobot = require('./autobot');
 
 module.exports = {
     omg: function (args, params, context) {
@@ -37,6 +37,7 @@ module.exports = {
 
         context.succeed(msg);
     },
+
     status: function (args, params, context) {
         var chunks = [
             "Status",
