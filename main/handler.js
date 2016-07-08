@@ -79,6 +79,12 @@ var getCommandFromName = function (name, callback) {
         case 'test':
             callback(null, testCommand);
             break;
+        case 'update':
+            callback(null, updateCommand);
+            break;
+        case 'get':
+            callback(null, getCommand);
+            break;
         default:
             callback("Command " + name + "not supported");
     }
@@ -109,6 +115,57 @@ var statusCommand = function (args, params, context) {
     ];
 
     context.succeed(stringToMessage(chunks.join("\n")));
+};
+
+var getCommand = function(args, params, context) {
+  var tableName = "hackathon";
+  var arg_task = args[0];
+
+  var dynamo_params = {
+    "TableName": "hackathon",
+    "Key": {
+      "task": arg_task
+    }
+  }
+
+  dynamo.getItem(dynamo_params, function(err, data) {
+    if (err) {
+        console.error("error message: " + err);
+        context.done('error','putting item into dynamodb failed: '+err);
+    }
+    else {
+        console.log('great success: '+JSON.stringify(data));
+    }
+  });
+};
+
+var updateCommand = function(args, params, context) {
+  var tableName = "hackathon";
+  var arg_task = args[0];
+  var arg_status = args[1];
+
+  var dynamo_params = {
+    "TableName": "hackathon",
+    "Key": {
+      "task": arg_task
+    },
+    "AttributeUpdates": {
+      "status": {
+        "Action": "PUT",
+        "Value": arg_status
+      }
+    }
+  };
+
+  dynamo.updateItem(dynamo_params, function(err, data) {
+    if (err) {
+        console.error("error message: " + err);
+        context.done('error','putting item into dynamodb failed: '+err);
+    }
+    else {
+        console.log('great success: '+JSON.stringify(data, null, '  '));
+    }
+  });
 };
 
 var testCommand = function (args, params, context) {
