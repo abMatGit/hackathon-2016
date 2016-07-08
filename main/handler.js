@@ -71,6 +71,9 @@ var runCommand = function (name, args, params, context) {
 
 var getCommandFromName = function (name, callback) {
     switch (name) {
+        case 'omg':
+            callback(null, commands.omg);
+            break;
         case 'status':
             callback(null, commands.status);
             break;

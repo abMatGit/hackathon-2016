@@ -1,7 +1,7 @@
 // Tasks status emojis
-module.exports.BLOCKER = ":red_circle:";
-module.exports.PARTIAL = ":yellow_circle:";
-module.exports.DONE    = ":green_circle:";
+module.exports.BLOCKER = ":red_light:";
+module.exports.PARTIAL = ":yellow_light:";
+module.exports.DONE    = ":green_light:";
 
 // Tasks displaying emojis
 module.exports.ARROW = ":child_arrow:";
