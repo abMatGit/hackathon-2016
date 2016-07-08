@@ -82,6 +82,9 @@ var getCommandFromName = function (name, callback) {
         case 'update':
             callback(null, updateCommand);
             break;
+        case 'query':
+            callback(null, getCommand);
+            break;
         case 'get':
             callback(null, getCommand);
             break;
@@ -107,14 +110,34 @@ var statusCommand = function (args, params, context) {
       "Status",
       "<https://lumoslabs.atlassian.net/browse/IOS-1617|IOS-1617> Full stack 'analysis of technique' screen :heart: @alan",
       ":arrow_lower_right: <https://lumoslabs.atlassian.net/browse/IOS-1619|IOS-1619> Integrate stats into 'analysis of technique' screen :heart: @alan",
-      ":white_small_square: :arrow_lower_right: <https://lumoslabs.atlassian.net/browse/IOS-1619|IOS-1619> Integrate stats into 'analysis of technique' screen :heart: @alan",
-      ":white_small_square: :white_small_square: :arrow_lower_right: <https://lumoslabs.atlassian.net/browse/IOS-1617|IOS-1617> Build UI :heart: @alan",
-      ":white_small_square: :white_small_square: :arrow_lower_right: <https://lumoslabs.atlassian.net/browse/IOS-1618|IOS-1618> Retrieve stats :yellow_heart: @somejesse",
+      ":white_small_square: :arrow_lower_right: <https://lumoslabs.atlassian.net/browse/IOS-1707|IOS-1707> Build UI :heart: @alan",
+      ":white_small_square: :arrow_lower_right: <https://lumoslabs.atlassian.net/browse/IOS-1618|IOS-1618> Retrieve stats :yellow_heart: @somejesse",
       "~~~~~~~  Legend ~~~~~~~",
       ":heart: Blocker :yellow_heart: Partially done, but not a blocker :green_heart: Done"
     ];
 
     context.succeed(stringToMessage(chunks.join("\n")));
+};
+
+var queryCommand = function(args, params, context) {
+  var tableName = "hackathon";
+  var arg_task = args[0];
+
+  var dynamo_params = {
+    "TableName": "hackathon",
+    "KeyConditionExpression": "task-parent = null"
+  }
+
+  dynamo.query(dynamo_params, function(err, data) {
+    if (err) {
+        console.error("error message: " + err);
+        context.done('error','putting item into dynamodb failed: '+err);
+    }
+    else {
+        console.log('great success: '+JSON.stringify(data));
+        context.done('great success: '+JSON.stringify(data));
+    }
+  });
 };
 
 var getCommand = function(args, params, context) {
@@ -124,7 +147,7 @@ var getCommand = function(args, params, context) {
   var dynamo_params = {
     "TableName": "hackathon",
     "Key": {
-      "task": arg_task
+      "task": "IOS-1617"
     }
   }
 
@@ -135,6 +158,7 @@ var getCommand = function(args, params, context) {
     }
     else {
         console.log('great success: '+JSON.stringify(data));
+        context.done('great success: '+JSON.stringify(data));
     }
   });
 };
