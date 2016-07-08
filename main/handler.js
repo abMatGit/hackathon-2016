@@ -94,7 +94,9 @@ var runCommand = function (name, args, params, context) {
             }
         };
     }
-    params.autobot.tasks = hardCodedTasks;
+    params.autobot = {
+        tasks: hardCodedTasks
+    };
 
     getCommandFromName(name, function (err, cmd) {
         if (err) {
