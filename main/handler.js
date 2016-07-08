@@ -1,8 +1,6 @@
 'use strict';
 
 var AWS = require('aws-sdk');
-var doc = require('dynamodb-doc');
-var dynamo = new doc.DynamoDB();
 var qs = require('querystring');
 var commands = require('./lib/commands');
 var token, kmsEncyptedToken;
@@ -76,9 +74,15 @@ var getCommandFromName = function (name, callback) {
         case 'status':
             callback(null, commands.status);
             break;
-        //case 'test':
-            //callback("");
-            //break;
+        case 'update':
+            callback(null, commands.update);
+            break;
+        case 'query':
+            callback(null, commands.query);
+            break;
+        case 'get':
+            callback(null, commands.get);
+            break;
         default:
             callback("Command " + name + "not supported");
     }
