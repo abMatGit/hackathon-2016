@@ -2,6 +2,8 @@ var doc = require('dynamodb-doc');
 var dynamo = new doc.DynamoDB();
 var autobot = require('./autobot');
 
+var tableName = "tasks";
+
 module.exports = {
     omg: function (args, params, context) {
 
@@ -29,72 +31,74 @@ module.exports = {
         });
     },
 
-    query: function(args, params, context) {
-        var tableName = "hackathon";
+    scan: function(args, params, context) {
         var arg_task = args[0];
 
-        var dynamo_params = {
-            "TableName": "hackathon",
-            "KeyConditionExpression": "task-parent = null"
-        };
+        var scan_params = {
+            "TableName": tableName,
+            "FilterExpression": "task = :feature-task",
+            "ExpressionAttributeValues": { ":feature-task": "IOS-1617" }
+        }
 
-        dynamo.query(dynamo_params, function(err, data) {
+        dynamo.scan(scan_params).eachPage(function(err, data) {
             if (err) {
                 console.error("error message: " + err);
-                context.done('error','putting item into dynamodb failed: '+err);
+                context.succeed({
+                  text: 'error putting item into dynamodb failed: '+err
+                });
             }
             else {
                 console.log('great success: '+JSON.stringify(data));
-                context.done('great success: '+JSON.stringify(data));
+                context.succeed({
+                  text: 'great success: '+JSON.stringify(data)
+                });
             }
         });
     },
 
     get: function(args, params, context) {
-        var tableName = "hackathon";
-        var arg_task = args[0];
+        var argTask = args[0];
 
-        var dynamo_params = {
-            "TableName": "hackathon",
+        var getParams = {
+            "TableName": tableName,
             "Key": {
-                "task": "IOS-1617"
+                "task": argTask
             }
         };
 
-        dynamo.getItem(dynamo_params, function(err, data) {
+        dynamo.getItem(getParams, function(err, data) {
             if (err) {
                 console.error("error message: " + err);
-                context.done('error','putting item into dynamodb failed: '+err);
+                context.succeed({ text: 'error putting item into dynamodb failed: '+err});
             }
             else {
                 console.log('great success: '+JSON.stringify(data));
-                context.done('great success: '+JSON.stringify(data));
+                context.succeed('great success: '+JSON.stringify(data));
             }
         });
     },
 
     update: function(args, params, context) {
-        var tableName = "hackathon";
-        var arg_task = args[0];
-        var arg_status = args[1];
+        var argTask = args[0];
+        var argStatus = args[1];
 
-        var dynamo_params = {
-            "TableName": "hackathon",
+        var update_params = {
+            "TableName": tableName,
             "Key": {
-                "task": arg_task
+                "task": argTask
             },
             "AttributeUpdates": {
                 "status": {
                     "Action": "PUT",
-                    "Value": arg_status
+                    "Value": argStatus
                 }
             }
         };
 
-        dynamo.updateItem(dynamo_params, function(err, data) {
+        dynamo.updateItem(updateParams, function(err, data) {
             if (err) {
                 console.error("error message: " + err);
-                context.done('error','putting item into dynamodb failed: '+err);
+                context.succeed({text: 'error putting item into dynamodb failed: '+err});
             }
             else {
                 console.log('great success: '+JSON.stringify(data, null, '  '));
