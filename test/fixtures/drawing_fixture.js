@@ -34,7 +34,7 @@ module.exports.sampleDrawing = {
     },
     expected: [
         d.ARROW,
-        d.DONE,
+        d.BLOCKER,
         d.jiraLink('IOS-01'),
         d.body(this.drawingTasks['IOS-01'])
     ].join(" ")
