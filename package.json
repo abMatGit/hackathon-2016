@@ -9,5 +9,11 @@
     "type": "git",
     "url": "git://github.com/"
   },
-  "dependencies": {}
+  "dependencies": {
+    "chai": "*",
+    "mocha": "*"
+  },
+  "scripts": {
+    "test" : "mocha"
+  }
 }
