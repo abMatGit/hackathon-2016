@@ -9,10 +9,12 @@
     "type": "git",
     "url": "git://github.com/"
   },
+  "dependencies": {
+    "commander": "^2.9.0"
+  },
   "devDependencies": {
     "chai": "*",
-    "mocha": "*",
-    "commander": "^2.9.0"
+    "mocha": "*"
   },
   "scripts": {
     "test" : "mocha"
