@@ -1,15 +1,11 @@
 var Parser = require('./parser');
 var Drawer = require('./drawer');
+var taskFixture = require('../../fixtures/hardcoded_tasks.js');
 
-module.exports.drawTasks = function (tasks) {
+module.exports.Interface = {
+  status: function() {
+    var tasks = taskFixture.hardCodedTasks;
     var instructions = Parser.getDrawingInstructions(tasks);
-
-    var lines = [];
-    lines.push("Status");
-    for (var i = 0, l = instructions.length; i < l; i ++) {
-        lines.push(Drawer.draw(instructions[i], tasks));
-    }
-    lines.push(".\n===============   Legend   ===============");
-    lines.push(Drawer.BLOCKER + " Blocker   " + Drawer.PARTIAL + " Partially done, but not a blocker  " + Drawer.DONE + "  Done");
-    return lines.join("\n");
-};
+    console.log(Drawer.drawInstructions(instructions, tasks));
+  }
+}

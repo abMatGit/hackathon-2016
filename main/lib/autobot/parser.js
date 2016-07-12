@@ -23,7 +23,7 @@ module.exports = {
             var task = tasks[taskId];
             var taskDrawingInstruction = {
                 padding: nestLevel,
-                task: taskId
+                taskName: taskId
             };
 
             instructionCollector.push(taskDrawingInstruction);
