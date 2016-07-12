@@ -2,7 +2,7 @@
 
 var program = require('commander');
 var fixtureTasks = require('./fixtures/hardcoded_tasks');
-var autobot = require('./lib/autobot');
+var autobotCLI = require('./lib/interfaces/command_line');
 
 var cmdValue;
 
@@ -14,6 +14,5 @@ program
   .parse(process.argv);
 
 if (cmdValue == 'status') {
-    var msg = autobot.drawTasks(fixtureTasks.hardCodedTasks);
-    console.log(msg);
+    autobotCLI.status({ tasks: fixtureTasks.hardCodedTasks});
 }
