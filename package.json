@@ -11,9 +11,13 @@
   },
   "devDependencies": {
     "chai": "*",
-    "mocha": "*"
+    "mocha": "*",
+    "commander": "^2.9.0"
   },
   "scripts": {
     "test" : "mocha"
+  },
+  "bin": {
+    "autobot": "main/index.js"
   }
 }
