@@ -2,9 +2,6 @@ var assert = require('chai').assert;
 
 var Autobot = function () {
     this.commands = {};
-    this.printer = function (output) {
-        return output;
-    }
 }
 
 Autobot.prototype.process_input = function (input, outputCallback) {
@@ -16,12 +13,11 @@ Autobot.prototype.process_input = function (input, outputCallback) {
     var command = this.commands[commandName];
 
     if (command) {
-        return outputCallback(null, this.printer(command(args)));
+        return outputCallback(null, command(args));
     } else {
-        return outputCallback('error');
+        return outputCallback('Command ' + commandName + ' not available.');
     }
 };
-
 
 describe('Autobot', function () {
     var autobot = new Autobot();
@@ -38,17 +34,9 @@ describe('Autobot', function () {
         });
     });
 
-    it('can use different printers', function (done) {
-        autobot.printer = function (output) {
-            return output.replace("🍎", ":apple:");
-        };
-
-        autobot.commands.emoji = function(args) {
-            return "🍎";
-        }
-
-        autobot.process_input('emoji apple', function (err, output) {
-            assert.equal(output, ":apple:");
+    it('errors when the command isnt setup', function (done) {
+        autobot.process_input('test foo', function (err, output) {
+            assert.isOk(err);
             done();
         });
     });
