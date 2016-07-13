@@ -37,7 +37,7 @@ module.exports.statusEmoji = function(task) {
     }
 };
 
-module.exports.draw = function (instruction, tasks) {
+module.exports.drawInstruction = function (instruction, task) {
     var retString;
 
     if (instruction.padding > 0) {
@@ -52,10 +52,30 @@ module.exports.draw = function (instruction, tasks) {
 
     retString = [
         retString,
-        this.statusEmoji(tasks[instruction.task]),
-        this.jiraLink(instruction.task),
-        this.body(tasks[instruction.task])
+        this.statusEmoji(task),
+        this.jiraLink(instruction.taskName),
+        this.body(task)
     ].join(" ");
 
     return retString;
+};
+
+module.exports.drawInstructions = function(instructions, tasks) {
+    var lines = [];
+    lines.push("Status");
+    for (var i = 0, l = instructions.length; i < l; i ++) {
+        var instruction = instructions[i];
+        var task = tasks[instruction.taskName];
+
+        lines.push(this.drawInstruction(instruction, task));
+    }
+    lines.push(this.drawLegend());
+    return lines.join("\n");
+};
+
+module.exports.drawLegend = function() {
+  var lines = [];
+  lines.push(".\n===============   Legend   ===============");
+  lines.push(this.BLOCKER + " Blocker   " + this.PARTIAL + " Partially done, but not a blocker  " + this.DONE + "  Done");
+  return lines.join("\n");
 };

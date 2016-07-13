@@ -9,11 +9,17 @@
     "type": "git",
     "url": "git://github.com/"
   },
+  "dependencies": {
+    "commander": "^2.9.0"
+  },
   "devDependencies": {
     "chai": "*",
     "mocha": "*"
   },
   "scripts": {
     "test" : "mocha"
+  },
+  "bin": {
+    "autobot": "main/index.js"
   }
 }
