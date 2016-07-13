@@ -4,6 +4,8 @@ var program = require('commander');
 var fixtureTasks = require('./fixtures/hardcoded_tasks');
 var autobotAdapter = require('./lib/adapters/command_line');
 
+autobot = new Autobot(CLIAdapter)
+
 var params = {};
 
 program
@@ -12,4 +14,3 @@ program
     autobotAdapter.processCommand(cmd, params);
   })
   .parse(process.argv);
-
