@@ -1,16 +1,32 @@
 var assert = require('chai').assert;
 
-var Autobot = function () {
-    this.commands = {};
+var AdapterA = function() {
+  this.commands = {
+      echo: function (args) {
+          return "Adapter A: " + args[0];
+      }
+  }
 }
 
-Autobot.prototype.process_input = function (input, outputCallback) {
+var AdapterB = function() {
+  this.commands = {
+      echo: function (args) {
+          return "Adapter B: " + args[0];
+      }
+  }
+}
+
+var Autobot = function(adapter) {
+    this.adapter = adapter;
+}
+
+Autobot.prototype.process = function(input, outputCallback) {
     var inputTokens = input.split(' ')
 
     var commandName = inputTokens[0];
     var args = inputTokens.slice(1);
 
-    var command = this.commands[commandName];
+    var command = this.adapter.commands[commandName];
 
     if (command) {
         return outputCallback(null, command(args));
@@ -20,39 +36,25 @@ Autobot.prototype.process_input = function (input, outputCallback) {
 };
 
 describe('Autobot', function () {
-    var autobot = new Autobot();
-    var echoInput = function (args) {
-        return args[0];
-    };
-    var help = function() {
-        help_message = 'List of supported commands:\n'
-        help_message += Object.keys(autobot.commands).join('\n');
-        return help_message;
-    }
+    var adapterA = new AdapterA();
+    var adapterB = new AdapterB();
 
-    it('has a help page for available commands', function (done) {
-        autobot.commands.echoInput = echoInput;
-        autobot.commands.help = help;
-
-        var expected_output = 'List of supported commands:\nechoInput\nhelp';
-
-        autobot.process_input('help', function (err, output) {
-            assert.equal(output, expected_output);
-            done();
+    it('executes commands via the adapter', function (done) {
+        var autobot = new Autobot(adapterA);
+        autobot.process('echo bar', function (err, output) {
+            assert.equal(output, 'Adapter A: bar');
         });
-    });
 
-    it('executes commands via process_input', function (done) {
-        autobot.commands.echoInput = echoInput;
-
-        autobot.process_input('echoInput bar', function (err, output) {
-            assert.equal(output, 'bar');
+        autobot = new Autobot(adapterB);
+        autobot.process('echo bar', function (err, output) {
+            assert.equal(output, 'Adapter B: bar');
             done();
         });
     });
 
     it('errors when the command isnt setup', function (done) {
-        autobot.process_input('test foo', function (err, output) {
+        var autobot = new Autobot(adapterA);
+        autobot.process('test foo', function (err, output) {
             assert.isOk(err);
             done();
         });
