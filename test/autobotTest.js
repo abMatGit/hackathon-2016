@@ -24,6 +24,23 @@ describe('Autobot', function () {
     var echoInput = function (args) {
         return args[0];
     };
+    var help = function() {
+        help_message = 'List of supported commands:\n'
+        help_message += Object.keys(autobot.commands).join('\n');
+        return help_message;
+    }
+
+    it('has a help page for available commands', function (done) {
+        autobot.commands.echoInput = echoInput;
+        autobot.commands.help = help;
+
+        var expected_output = 'List of supported commands:\nechoInput\nhelp';
+
+        autobot.process_input('help', function (err, output) {
+            assert.equal(output, expected_output);
+            done();
+        });
+    });
 
     it('executes commands via process_input', function (done) {
         autobot.commands.echoInput = echoInput;
