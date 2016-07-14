@@ -4,20 +4,39 @@ var Autobot = function () {
     this.commands = {};
 }
 
-Autobot.prototype.process_input = function (input, outputCallback) {
-    var inputTokens = input.split(' ')
+Autobot.prototype.process_input = function (inputString, outputCallback) {
+    var input = this.inputParser(inputString);
 
-    var commandName = inputTokens[0];
-    var args = inputTokens.slice(1);
-
-    var command = this.commands[commandName];
+    var command = this.commands[input.command];
 
     if (command) {
-        return outputCallback(null, command(args));
+        return outputCallback(null, command(input.args));
     } else {
         return outputCallback('Command ' + commandName + ' not available.');
     }
 };
+
+Autobot.prototype.inputParser =
+
+    var clieInputParser = function (input) {
+    }
+
+    var inputTokens = input.split(' ')
+
+    return {
+        command: inputTokens[0]
+        args: inputTokens.slice(1)
+    }
+}
+
+var slackWebHookPerser = function (input) {
+    var inputTokens = input.split(' ')
+
+    return {
+        command: inputTokens[0]
+        args: inputTokens.slice(1)
+    }
+}
 
 describe('Autobot', function () {
     var autobot = new Autobot();
@@ -34,7 +53,7 @@ describe('Autobot', function () {
         });
     });
 
-    it('errors when the command isnt setup', function (done) {
+    it('returns an error when the command isnt found', function (done) {
         autobot.process_input('test foo', function (err, output) {
             assert.isOk(err);
             done();
