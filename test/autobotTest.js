@@ -4,38 +4,45 @@ var Autobot = function () {
     this.commands = {};
 }
 
-Autobot.prototype.process_input = function (inputString, outputCallback) {
-    var input = this.inputParser(inputString);
+Autobot.prototype.process_input = function (inputString, callback) {
+    if (!callback) {
+        callback = callback || function () {};
+    }
 
-    var command = this.commands[input.command];
+    var resultHandler = {
+        // Shim that will let us forget about passing null in sucessful cases.
+        success: function (data) { callback(null, data); },
+        fail: function (err) { callback(err); }
+    };
 
-    if (command) {
-        return outputCallback(null, command(input.args));
-    } else {
-        return outputCallback('Command ' + commandName + ' not available.');
+    try {
+        var input = inputParser(inputString);
+        var cmd = getCommand(this, input);
+
+        cmd(input, resultHandler);
+    } catch (error) {
+        resultHandler.fail(error);
     }
 };
 
-Autobot.prototype.inputParser =
 
-    var clieInputParser = function (input) {
+function getCommand (inputData) {
+    let cmdFn = this.commands[inputData.command];
+
+    if (!cmdFn) {
+        throw "Wtf mang";
     }
 
-    var inputTokens = input.split(' ')
-
-    return {
-        command: inputTokens[0]
-        args: inputTokens.slice(1)
-    }
+    return cmdFn;
 }
 
-var slackWebHookPerser = function (input) {
-    var inputTokens = input.split(' ')
+function inputParser (input) {
+    var inputTokens = input.split(' ');
 
     return {
-        command: inputTokens[0]
+        command: inputTokens[0],
         args: inputTokens.slice(1)
-    }
+    };
 }
 
 describe('Autobot', function () {
@@ -44,19 +51,11 @@ describe('Autobot', function () {
         return args[0];
     };
 
-    it('executes commands via process_input', function (done) {
+    it('uses a callback to pass data', function () {
         autobot.commands.echoInput = echoInput;
 
-        autobot.process_input('echoInput bar', function (err, output) {
-            assert.equal(output, 'bar');
-            done();
-        });
-    });
-
-    it('returns an error when the command isnt found', function (done) {
-        autobot.process_input('test foo', function (err, output) {
-            assert.isOk(err);
-            done();
-        });
+        autobot.process_input('', function(err, output) {
+            assert(err);
+        })
     });
 });
