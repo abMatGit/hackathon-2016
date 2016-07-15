@@ -1,17 +1,22 @@
 var assert = require('chai').assert;
+var Autobot = require('../../main/autobot');
 
-var statusCommand = function (args) {
-    if (args.length > 0) {
+var statusCommand = function (input, handler) {
+    if (input.args[0]) {
         // use specific story
     }
 
     // use all stories
-    return 'yes';
+    handler.success('no');
 };
 
 describe('Status Command', function () {
     it('display everything if no story is passed in', function() {
-        var result = statusCommand(['im retarded?']);
-        assert.equal(result, 'no');
+        var autobot = new Autobot();
+
+        autobot.commands.status = statusCommand;
+        autobot.process_input('status im retarded?', function (err, output) {
+            assert.equal(output, 'no');
+        });
     });
 });
