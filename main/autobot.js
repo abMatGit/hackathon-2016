@@ -1,33 +1,40 @@
+// Default Commands
 var default_commands = {
     'echo': function (input, handler) {
         handler.ok(input.args);
     }
 }
 
+// Adapters
+var slack = {
+    parseInput: function parseInput (input) {
+        var inputTokens = input.split(' ');
 
-var Adapter = Object.new();
-
-var Slack = Object.new(Adapter);
-
-var Adapters = {
-    'slack': {
-        readEvent: function (event, context) {
-            var body = event.body;
-            var params = qs.parse(body);
-            var requestToken = params.token;
-        }
+        return {
+            command: inputTokens[0],
+            args: inputTokens.slice(1)
+        };
     }
 };
 
-var Autobot = function (adapter_name, args) {
-    this.adapter = Adapater(adapter_name);
+var Adapters = {
+    'slack': slack
+};
+
+// Autobot
+var Autobot = function (adapter_name, commands) {
+    adapter_name = adapter_name || 'slack';
+    this.adapter = Adapters[adapter_name];
+
     if (!this.adapter) {
         throw "No Adapter found";
     }
 
-    this.commands = new Commands(default_commands);
+    this.commands = new Commands(commands || default_commands);
 }
 
+
+// Handler
 var Handler = function (callback) {
     if (!callback) {
         callback = callback || function () {};
@@ -38,19 +45,21 @@ var Handler = function (callback) {
     };
 
     this.err = function (err) {
+        console.error(err);
         callback(err);
     }
 };
 
-
+// Errors
 Autobot.CommandNotFoundError = "Command not found";
+
 
 Autobot.prototype.process_input = function (inputString, callback) {
     var handler = new Handler(callback);
 
     try {
-        var input = parseInput(inputString);
-        var cmd = this.getCommand(input);
+        var input = this.adapter.parseInput(inputString);
+        var cmd = this.commands.lookup(input.command);
 
         cmd(input, handler);
     } catch (error) {
@@ -58,30 +67,22 @@ Autobot.prototype.process_input = function (inputString, callback) {
     }
 };
 
-
 var Commands = function (cmds) {
     this.commands = cmds;
+};
 
-    this.lookup = function (cmdName) {
+Commands.prototype = {
+    lookup: function (cmdName) {
         var cmd = this.commands[cmdName];
 
         if (!cmd) {
+            console.error("Available Commands: ");
+            console.error(this.commands);
             throw Autobot.CommandNotFoundError;
         }
+
+        return cmd;
     }
-}
-
-Autobot.prototype.getCommand = function (inputData) {
-    return this.commands.lookup(inputData.command);
-}
-
-function parseInput (input) {
-    var inputTokens = input.split(' ');
-
-    return {
-        command: inputTokens[0],
-        args: inputTokens.slice(1)
-    };
 }
 
 module.exports = Autobot;
