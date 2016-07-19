@@ -4,7 +4,7 @@ var Autobot = require('../main/autobot');
 
 describe('Autobot', function () {
     var autobot = new Autobot();
-    var echoInput = function (input, handler) {
+    var echoInput = function (input, data, handler) {
         handler.success(input.args[0]);
     };
 
@@ -17,6 +17,7 @@ describe('Autobot', function () {
     it('uses a callback to error back out', function () {
         autobot.commands.echoInput = echoInput;
         autobot.process_input('echoInput echo', function(err, output) {
+            assert.equal(err, null);
             assert.equal(output, 'echo');
         });
     });

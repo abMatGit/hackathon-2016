@@ -1,12 +1,17 @@
-var Autobot = function () {
-    this.commands = {};
+class Autobot {
+    constructor(extra = {}) {
+      this.commands = {};
+      this.extra = extra;
+    }
 }
 
 Autobot.CommandNotFoundError = "Command not found";
+Autobot.CallbackNotDefined   = "Callback not defined";
+Autobot.InvalidInput         = function (input) { return "Invalid input: " + input; };
 
 Autobot.prototype.process_input = function (inputString, callback) {
     if (!callback) {
-        callback = callback || function () {};
+        throw Autobot.CallbackNotDefined;
     }
 
     var resultHandler = {
@@ -16,18 +21,18 @@ Autobot.prototype.process_input = function (inputString, callback) {
     };
 
     try {
-        var input = inputParser(inputString);
+        var input = inputParser(this, inputString);
         var cmd = getCommand(this, input);
 
-        cmd(input, resultHandler);
+        cmd(input, this.extra, resultHandler);
     } catch (error) {
         resultHandler.fail(error);
     }
 };
 
 
-function getCommand (autobot, inputData) {
-    var cmdFn = autobot.commands[inputData.command];
+function getCommand (autobot, input) {
+    var cmdFn = autobot.commands[input.command];
 
     if (!cmdFn) {
         throw Autobot.CommandNotFoundError;
@@ -36,11 +41,16 @@ function getCommand (autobot, inputData) {
     return cmdFn;
 }
 
-function inputParser (input) {
+function inputParser (autobot, input) {
+    if(!input) {
+      throw Autobot.InvalidInput('"' + input + '"');
+    }
+
     var inputTokens = input.split(' ');
+    var commandToken = inputTokens[0];
 
     return {
-        command: inputTokens[0],
+        command: commandToken,
         args: inputTokens.slice(1)
     };
 }
