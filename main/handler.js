@@ -45,18 +45,9 @@ var processEvent = function(event, context) {
         console.error("Request token (" + requestToken + ") does not match exptected");
         context.fail("Invalid request token");
     }
-    var commandText = params.text;
 
-    // commandText = "asdf status foo bar"
-    var args = commandText.split(' ');
-
-    // command = "status"
-    var command = args[1];
-
-    // args = "foo bar"
-    args.splice(0, 2);
-
-    runCommand(command, args, params, context);
+    var autobot = Autobot('slack', event, context);
+    autobot.process_input(params.text);
 };
 
 var runCommand = function (name, args, params, context) {

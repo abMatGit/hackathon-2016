@@ -1,56 +1,85 @@
-class Autobot {
-    constructor(extra = {}) {
-      this.commands = {};
-      this.extra = extra;
+var default_commands = {
+    'echo': function (input, handler) {
+        handler.ok(input.args);
     }
 }
 
-Autobot.CommandNotFoundError = "Command not found";
-Autobot.CallbackNotDefined   = "Callback not defined";
-Autobot.InvalidInput         = function (input) { return "Invalid input: " + input; };
 
-Autobot.prototype.process_input = function (inputString, callback) {
-    if (!callback) {
-        throw Autobot.CallbackNotDefined;
+var Adapter = Object.new();
+
+var Slack = Object.new(Adapter);
+
+var Adapters = {
+    'slack': {
+        readEvent: function (event, context) {
+            var body = event.body;
+            var params = qs.parse(body);
+            var requestToken = params.token;
+        }
+    }
+};
+
+var Autobot = function (adapter_name, args) {
+    this.adapter = Adapater(adapter_name);
+    if (!this.adapter) {
+        throw "No Adapter found";
     }
 
-    var resultHandler = {
-        // Shim that will let us forget about passing null in sucessful cases.
-        success: function (data) { callback(null, data); },
-        fail: function (err) { callback(err); }
+    this.commands = new Commands(default_commands);
+}
+
+var Handler = function (callback) {
+    if (!callback) {
+        callback = callback || function () {};
+    }
+
+    this.ok = function (data) {
+        callback(null, data);
     };
 
-    try {
-        var input = inputParser(this, inputString);
-        var cmd = getCommand(this, input);
-
-        cmd(input, this.extra, resultHandler);
-    } catch (error) {
-        resultHandler.fail(error);
+    this.err = function (err) {
+        callback(err);
     }
 };
 
 
-function getCommand (autobot, input) {
-    var cmdFn = autobot.commands[input.command];
+Autobot.CommandNotFoundError = "Command not found";
 
-    if (!cmdFn) {
-        throw Autobot.CommandNotFoundError;
+Autobot.prototype.process_input = function (inputString, callback) {
+    var handler = new Handler(callback);
+
+    try {
+        var input = parseInput(inputString);
+        var cmd = this.getCommand(input);
+
+        cmd(input, handler);
+    } catch (error) {
+        handler.err(error);
     }
+};
 
-    return cmdFn;
+
+var Commands = function (cmds) {
+    this.commands = cmds;
+
+    this.lookup = function (cmdName) {
+        var cmd = this.commands[cmdName];
+
+        if (!cmd) {
+            throw Autobot.CommandNotFoundError;
+        }
+    }
 }
 
-function inputParser (autobot, input) {
-    if(!input) {
-      throw Autobot.InvalidInput('"' + input + '"');
-    }
+Autobot.prototype.getCommand = function (inputData) {
+    return this.commands.lookup(inputData.command);
+}
 
+function parseInput (input) {
     var inputTokens = input.split(' ');
-    var commandToken = inputTokens[0];
 
     return {
-        command: commandToken,
+        command: inputTokens[0],
         args: inputTokens.slice(1)
     };
 }
