@@ -1,88 +1,71 @@
-// Default Commands
+var Handler = require('./autobot/handler.js');
+
+// Default set of commands
 var default_commands = {
     'echo': function (input, handler) {
         handler.ok(input.args);
     }
 }
 
-// Adapters
-var slack = {
-    parseInput: function parseInput (input) {
-        var inputTokens = input.split(' ');
-
-        return {
-            command: inputTokens[0],
-            args: inputTokens.slice(1)
-        };
-    }
-};
-
+// Adapters : Still a fresh idea since autobot can use many different adapters.
 var Adapters = {
-    'slack': slack
+    'slack': {
+        parseInput: function parseInput (input) {
+            var inputTokens = input.split(' ');
+
+            return {
+                command: inputTokens[0],
+                args: inputTokens.slice(1)
+            };
+        }
+    }
 };
 
-// Autobot
-var Autobot = function (adapter_name, commands) {
-    adapter_name = adapter_name || 'slack';
-    this.adapter = Adapters[adapter_name];
+// access a property and throw if doesn't exist.
+function access (resource, key) {
+    var result = resource[key];
 
-    if (!this.adapter) {
-        throw "No Adapter found";
+    if (!result) {
+        var error = new ResourceAccessError(resource, key);
+        console.error(error);
+        throw error;
     }
 
-    this.commands = new Commands(commands || default_commands);
+    return result;
+};
+
+
+ResourceAccessError = function (key, value) {
+    this.key = key;
+    this.value = value;
+
+    this.toString = function() {
+        return this.value + " resource doesn't contain a value for key " + this.key;
+    };
 }
 
+// Autobot finally !
+var Autobot = function (adapter_name, commands) {
+    this.adapter = access(Adapters, adapter_name || 'slack');
+    this.commands = commands || default_commands;
+}
 
-// Handler
-var Handler = function (callback) {
-    if (!callback) {
-        callback = callback || function () {};
-    }
-
-    this.ok = function (data) {
-        callback(null, data);
-    };
-
-    this.err = function (err) {
-        console.error(err);
-        callback(err);
-    }
-};
-
-// Errors
-Autobot.CommandNotFoundError = "Command not found";
-
-
+// #process_input
 Autobot.prototype.process_input = function (inputString, callback) {
     var handler = new Handler(callback);
 
     try {
         var input = this.adapter.parseInput(inputString);
-        var cmd = this.commands.lookup(input.command);
+        var cmd = access(this.commands, input.command);
 
         cmd(input, handler);
     } catch (error) {
+        // Fail on the bot
         handler.err(error);
+
+        // Fail as a program
+        throw error;
     }
 };
-
-var Commands = function (cmds) {
-    this.commands = cmds;
-};
-
-Commands.prototype = {
-    lookup: function (cmdName) {
-        var cmd = this.commands[cmdName];
-
-        if (!cmd) {
-            console.error("Available Commands: ");
-            console.error(this.commands);
-            throw Autobot.CommandNotFoundError;
-        }
-
-        return cmd;
-    }
-}
 
 module.exports = Autobot;
