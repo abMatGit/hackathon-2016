@@ -1,4 +1,5 @@
 var Handler = require('./autobot/handler.js');
+var access = require('./lib/resource_accessor.js').access;
 
 // Default set of commands
 var default_commands = {
@@ -20,29 +21,6 @@ var Adapters = {
         }
     }
 };
-
-// access a property and throw if doesn't exist.
-function access (resource, key) {
-    var result = resource[key];
-
-    if (!result) {
-        var error = new ResourceAccessError(resource, key);
-        console.error(error);
-        throw error;
-    }
-
-    return result;
-};
-
-
-ResourceAccessError = function (key, value) {
-    this.key = key;
-    this.value = value;
-
-    this.toString = function() {
-        return this.value + " resource doesn't contain a value for key " + this.key;
-    };
-}
 
 // Autobot finally !
 var Autobot = function (adapter_name, commands) {
@@ -66,6 +44,11 @@ Autobot.prototype.process_input = function (inputString, callback) {
         // Fail as a program
         throw error;
     }
+};
+
+// #process_output
+Autobot.prototype.process_output = function(outputString) {
+
 };
 
 module.exports = Autobot;

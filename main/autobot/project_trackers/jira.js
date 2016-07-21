@@ -1,6 +1,6 @@
 var config = require('../../../configs/jira_credentials');
 
-var ProjectTracker = require('../autobot/project_trackers/project_tracker');
+var ProjectTracker = require('./project_tracker');
 var JiraApi = require('jira').JiraApi;
 
 var Jira = Object.create(ProjectTracker);
