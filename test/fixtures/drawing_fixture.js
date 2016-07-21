@@ -1,5 +1,3 @@
-var d = require('../../main/lib/drawer');
-
 module.exports.drawingTasks = {
     "IOS-01" : {
         title: "task a",
@@ -27,15 +25,3 @@ module.exports.drawingTasks = {
     }
 };
 
-module.exports.sampleDrawing = {
-    input: {
-      padding: 1,
-      task: 'IOS-01'
-    },
-    expected: [
-        d.ARROW,
-        d.BLOCKER,
-        d.jiraLink('IOS-01'),
-        d.body(this.drawingTasks['IOS-01'])
-    ].join(" ")
-};

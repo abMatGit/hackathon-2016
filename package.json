@@ -13,7 +13,14 @@
     "chai": "*",
     "mocha": "*"
   },
+  "dependencies": {
+    "jira": "0.9.*"
+  },
   "scripts": {
-    "test" : "mocha"
+    "test": "mocha --recursive"
+  },
+  "dependencies": {
+    "dep": "0.0.2",
+    "jira": "^0.9.2"
   }
 }
