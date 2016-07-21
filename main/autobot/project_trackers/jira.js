@@ -1,11 +1,12 @@
 var credentials = require('../../../configs/jira_credentials');
 var JiraApi = require('jira').JiraApi;
+
 var config = {
   protocol: 'https',
-  host: 'lumoslabs.atlassian.net',
+  host: credentials.host,
   port: null,
-  username: credentials.username, // your jira username
-  password: credentials.password, // your jira password
+  username: credentials.username,
+  password: credentials.password,
   api_version: 'latest'
 }
 
