@@ -3,7 +3,7 @@ var ProjectTracker = require('../main/autobot/project_tracker');
 
 describe('Project Tracker', function () {
     describe('getStory', function () {
-        it('returns foo', function (done) {
+        xit('returns foo', function (done) {
             this.timeout(50000);
 
             var jira = new ProjectTracker('jira');
