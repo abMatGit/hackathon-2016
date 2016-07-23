@@ -1,8 +1,9 @@
 var access = require('../..//lib/resource_accessor').access;
+var Handler = require('../handler.js');
 
 class Adapter {
   constructor(core) {
-    this.commands = core.commands;
+    this.core = core;
   }
 
   parseInput(input) {
@@ -14,9 +15,15 @@ class Adapter {
     };
   }
 
-  invokeCommand(input, handler) {
-    var cmd = access(this.commands, input.command);
-    cmd(input, handler);
+  invokeCommand(input) {
+    // For our adapters, we will end up modifiying 'input.command'
+    // for both the cmd and the callback
+    var cmd = access(this.core.commands, input.command);
+    var callback = access(this.core.callbacks, input.command);
+    var handler = new Handler(callback);
+    var result = cmd(input, handler);
+
+    this.adaptOutput(result);
   }
 
   adaptOutput(output) {

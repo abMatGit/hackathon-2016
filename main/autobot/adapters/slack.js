@@ -5,4 +5,9 @@ class Slack extends Adapter {
     super(core);
   }
 
+  adaptOutput(output) {
+    return { 'text': output };
+  }
 }
+
+module.exports = Slack

@@ -1,31 +1,16 @@
 var Handler = require('./autobot/handler.js');
 var access = require('./lib/resource_accessor.js').access;
-
-// Default set of commands
-var default_commands = {
-    'echo': function (input, handler) {
-        handler.ok(input.args);
-    }
-}
+var core = require('./autobot/core/core.js');
+var Slack = require('./autobot/adapters/slack.js');
 
 // Adapters : Still a fresh idea since autobot can use many different adapters.
 var Adapters = {
-    'slack': {
-        parseInput: function parseInput (input) {
-            var inputTokens = input.split(' ');
-
-            return {
-                command: inputTokens[0],
-                args: inputTokens.slice(1)
-            };
-        }
-    }
+    'slack': new Slack(core)
 };
 
 // Autobot finally !
-var Autobot = function (adapter_name, commands) {
+var Autobot = function (adapter_name) {
     this.adapter = access(Adapters, adapter_name || 'slack');
-    this.commands = commands || default_commands;
 }
 
 // #process_input
@@ -34,9 +19,8 @@ Autobot.prototype.process_input = function (inputString, callback) {
 
     try {
         var input = this.adapter.parseInput(inputString);
-        var cmd = access(this.commands, input.command);
+        this.adapter.invokeCommand(input);
 
-        cmd(input, handler);
     } catch (error) {
         // Fail on the bot
         handler.err(error);
@@ -44,11 +28,6 @@ Autobot.prototype.process_input = function (inputString, callback) {
         // Fail as a program
         throw error;
     }
-};
-
-// #process_output
-Autobot.prototype.process_output = function(outputString) {
-
 };
 
 module.exports = Autobot;

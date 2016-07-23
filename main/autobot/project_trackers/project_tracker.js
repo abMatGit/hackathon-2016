@@ -1,13 +1,13 @@
-var Handler = require('../autobot/handler');
-
 var ProjectTracker = function (client) {
     this.client = client;
 }
 
 ProjectTracker.prototype = {
-    getStory: function (storyId, callback) {
-        var handler = new Handler(callback);
+    getStory: function (storyId, handler) {
+        this.client.findIssue(storyId, handler);
+    },
 
+    getStatus: function (storyId, handler) {
         this.client.findIssue(storyId, handler);
     }
 };

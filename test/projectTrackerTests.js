@@ -1,5 +1,6 @@
 var assert = require('chai').assert;
-var ProjectTracker = require('../main/autobot/project_tracker');
+var ProjectTracker = require('../main/autobot/project_trackers/project_tracker');
+var Handler = require('../main/autobot/handler');
 
 class Client {
   constructor(config) {
@@ -31,11 +32,14 @@ describe('Project Tracker', function () {
         it('returns the storyID on data', function (done) {
             var client = new FakeClient();
             var tracker = new ProjectTracker(client);
+            var callback = function(err, data) {
+              assert.equal(data, 'IOS-1381');
+              done();
+            };
 
-            tracker.getStory('IOS-1383', function (err, data) {
-                assert.equal(data, 'IOS-1383');
-                done();
-            });
+            var handler = new Handler(callback);
+
+            tracker.getStory('IOS-1381', handler);
         });
     });
 });
