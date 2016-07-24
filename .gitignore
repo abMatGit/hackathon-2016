@@ -1,5 +1,5 @@
 #Credentials
-configs/*_credentials.js
+**/*credentials.js
 
 # Logs
 logs
