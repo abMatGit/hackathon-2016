@@ -1,15 +1,15 @@
-var ProjectTracker = function (client) {
+class ProjectTracker {
+  constructor(client) {
     this.client = client;
-}
+  }
 
-ProjectTracker.prototype = {
-    getStory: function (storyId, handler) {
-        this.client.findIssue(storyId, handler);
-    },
+  getStory(storyId, handler) {
+    this.client.findIssue(storyId, handler);
+  }
 
-    getStatus: function (storyId, handler) {
-        this.client.findIssue(storyId, handler);
-    }
+  getStatus(storyId, handler) {
+    this.client.findIssue(storyId, handler.callback);
+  }
 };
 
 module.exports = ProjectTracker;

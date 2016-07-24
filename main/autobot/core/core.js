@@ -1,5 +1,7 @@
+var tracker = require('../project_trackers/jira');
+
 class Core {
-  constructor(commands, callbacks) {
+  constructor(commands, callbacks, tracker) {
     this.commands = commands;
     this.callbacks = callbacks;
   }
@@ -16,7 +18,8 @@ var commands = {
   },
 
   'getStatus': function (args, handler) {
-    tracker.getStatus(args, handler);
+    storyId = args[0];
+    tracker.getStatus(storyId, handler);
   }
 }
 
@@ -27,8 +30,9 @@ var callbacks = {
 
   'getStatus': function(err, issue) {
     console.log('Status: ' + issue.fields.status.name);
+    console.log('error:' + err);
     return issue;
   },
 }
 
-module.exports = new Core(commands, callbacks);
+module.exports = new Core(commands, callbacks, tracker);
