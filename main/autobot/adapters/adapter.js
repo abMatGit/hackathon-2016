@@ -21,7 +21,7 @@ class Adapter {
     var cmd = access(this.core.commands, input.command);
     var callback = access(this.core.callbacks, input.command);
     var handler = new Handler(callback);
-    var result = cmd(input, handler);
+    var result = cmd(input.args, handler);
 
     this.adaptOutput(result);
   }
