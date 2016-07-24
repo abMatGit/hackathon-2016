@@ -1,7 +1,7 @@
 module.exports = {
+    protocol: 'https',
     host: 'host',
-    protocol: null,
-    api_version: 'latest'
     username: 'your_username',
-    password: 'password'
+    password: 'password',
+    api_version: 'latest'
 }
