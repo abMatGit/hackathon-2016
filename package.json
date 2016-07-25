@@ -13,9 +13,6 @@
     "chai": "*",
     "mocha": "*"
   },
-  "dependencies": {
-    "jira": "0.9.*"
-  },
   "scripts": {
     "test": "mocha --recursive"
   },
