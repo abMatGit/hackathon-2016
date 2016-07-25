@@ -42,8 +42,7 @@ var processEvent = function(event, context) {
     }
 
     var autobot = new Autobot();
-    var autobot_params = params.text.slice(1);
-    autobot.process_input(autobot_params, function (err, result) {
+    autobot.process_input(params.text, function (err, result) {
       if (err) {
         context.succeed(err)
       };

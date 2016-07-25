@@ -5,7 +5,6 @@ var Adapter = function(core) {
   this.core = core;
 
   this.invokeCommand = function(input, handler) {
-    console.log("invoke command input: " + input);
     // For our adapters, we will end up modifiying 'input.command'
     // for both the cmd and the callback
     var cmd = access(this.core.commands, input.command);

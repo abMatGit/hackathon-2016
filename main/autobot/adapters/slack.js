@@ -7,8 +7,8 @@ Slack.prototype.adaptOutput = function(output) {
 }
 
 Slack.prototype.parseInput = function(input) {
+  // input = autobot getStatus IOS-9999
   var inputTokens = input.split(' ');
-  console.log(inputTokens);
 
   return {
     command: inputTokens[1],
