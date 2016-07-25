@@ -1,38 +1,42 @@
-var tracker = require('../project_trackers/jira');
+var tracker = require('../project_trackers/jira_tracker');
 
-class Core {
-  constructor(commands, callbacks, tracker) {
-    this.commands = commands;
-    this.callbacks = callbacks;
-  }
+var Core = function(commands, tracker) {
+  this.commands = commands;
+  this.tracker = tracker;
 }
+
+var getStatusOfIssue = function (issue) {
+  return issue.fields.status.name;
+};
 
 var commands = {
   'echo': function (input, handler) {
-    handler.ok(input.args);
+    handler.ok(input);
   },
 
   'getStory': function (args, handler) {
-    tracker.findIssue(args);
-    handler.ok(data);
+    tracker.getStory(args, function (err, issue) {
+      if (err) {
+        handler.err(err);
+      } else {
+        handler.ok("Status is: " + issue.fields.status.name);
+      }
+    });
   },
 
   'getStatus': function (args, handler) {
     storyId = args[0];
-    tracker.getStatus(storyId, handler);
+    tracker.getStatus(storyId, function (err, issue) {
+      if (err) { handler.error(err) };
+
+      var owner = getOwner(issue);
+      handler.ok(owner);
+    });
   }
 }
 
-var callbacks = {
-  'echo': function(err, input) {
-    return input;
-  },
-
-  'getStatus': function(err, issue) {
-    console.log('Status: ' + issue.fields.status.name);
-    console.log('error:' + err);
-    return issue;
-  },
+function getOwner(issue) {
+  return issue.mybalss.owner;
 }
 
-module.exports = new Core(commands, callbacks, tracker);
+module.exports = new Core(commands, tracker);

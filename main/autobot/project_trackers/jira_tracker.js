@@ -3,7 +3,7 @@ var config = require('../../../configs/jira_credentials');
 var ProjectTracker = require('./project_tracker');
 var JiraApi = require('jira').JiraApi;
 
-class Jira extends ProjectTracker {}
+var Jira = ProjectTracker;
 
 var jira_client = new JiraApi(
     config.protocol,

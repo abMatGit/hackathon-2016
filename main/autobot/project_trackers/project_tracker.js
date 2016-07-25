@@ -1,14 +1,12 @@
-class ProjectTracker {
-  constructor(client) {
-    this.client = client;
+var ProjectTracker = function(client){
+  this.client = client;
+
+  this.getStory = function(storyId, callback) {
+    this.client.findIssue(storyId, callback);
   }
 
-  getStory(storyId, handler) {
-    this.client.findIssue(storyId, handler);
-  }
-
-  getStatus(storyId, handler) {
-    this.client.findIssue(storyId, handler.callback);
+  this.getStatus = function(storyId, callback) {
+    this.client.findIssue(storyId, callback);
   }
 };
 

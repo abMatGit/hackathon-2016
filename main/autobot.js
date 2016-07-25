@@ -15,16 +15,14 @@ var Autobot = function (adapter_name) {
 
 // #process_input
 Autobot.prototype.process_input = function (inputString, callback) {
-    var handler = new Handler(callback);
+    var handler = new Handler(callback, this.adapter);
 
     try {
         var input = this.adapter.parseInput(inputString);
-        this.adapter.invokeCommand(input);
-
+        this.adapter.invokeCommand(input, handler);
     } catch (error) {
         // Fail on the bot
         handler.err(error);
-
         // Fail as a program
         throw error;
     }

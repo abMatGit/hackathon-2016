@@ -1,13 +1,19 @@
 var Adapter = require('./adapter');
 
-class Slack extends Adapter {
-  constructor(core) {
-    super(core);
-  }
+var Slack = Adapter;
 
-  adaptOutput(output) {
-    return { 'text': output };
-  }
+Slack.prototype.adaptOutput = function(output) {
+  return { 'text': output };
 }
+
+Slack.prototype.parseInput = function(input) {
+  var inputTokens = input.split(' ');
+  console.log(inputTokens);
+
+  return {
+    command: inputTokens[1],
+    args: inputTokens.slice(2)
+  };
+};
 
 module.exports = Slack
