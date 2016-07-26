@@ -3,6 +3,10 @@ var ProjectTracker = function(client){
 }
 
 ProjectTracker.prototype.getStory = function(storyId, callback) {
+    this.client.findIssue(storyId, callback);
+}
+
+ProjectTracker.prototype.getStatus = function(storyId, callback) {
   this.client.findIssue(storyId, callback);
 }
 

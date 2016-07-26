@@ -22,6 +22,31 @@ var commands = {
         handler.ok("Status is: " + getStatusOfIssue(issue));
       }
     });
+  },
+
+  'getUsersIssues': function (args, handler) {
+    tracker.getUsersIssues(args, function (err, data) {
+      if (err) {
+        handler.err(err);
+      } else {
+        var total = data.total;
+        var return_string = "";
+        for (var i = 0; i < total; i++) {
+          return_string = return_string + "\nIssue: " + data.issues[i].key;
+        };
+        handler.ok("User issues: " + return_string);
+      }
+    });
+  },
+
+  'getStatus': function (args, handler) {
+    storyId = args[0];
+    tracker.getStatus(storyId, function (err, issue) {
+      if (err) { handler.error(err) };
+
+      var owner = getOwner(issue);
+      handler.ok(owner);
+    });
   }
 }
 
