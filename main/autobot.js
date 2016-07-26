@@ -1,16 +1,17 @@
 var Handler = require('./autobot/handler');
 var access = require('./lib/resource_accessor').access;
 var core = require('./autobot/core/core');
-var Slack = require('./autobot/adapters/slack');
+var Adapters = require('./autobot/adapters');
 
-// Adapters : Still a fresh idea since autobot can use many different adapters.
-var Adapters = {
-    'slack': new Slack(core)
-};
-
-// Autobot finally !
 var Autobot = function (adapter_name) {
-    this.adapter = access(Adapters, adapter_name || 'slack');
+    switch (adapter_name) {
+        case 'slack':
+            this.adapter = new Adapters.Slack(core);
+            break;
+        case 'cli':
+        default:
+            this.adapter = new Adapters.Cli(core);
+    }
 }
 
 // #process_input
@@ -23,8 +24,6 @@ Autobot.prototype.process_input = function (inputString, callback) {
     } catch (error) {
         // Fail on the bot
         handler.err(error);
-        // Fail as a program
-        throw error;
     }
 };
 

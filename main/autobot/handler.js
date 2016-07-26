@@ -13,7 +13,6 @@ Handler.prototype = {
     },
 
     err: function (err) {
-        console.error(err);
         this.callback(err);
     }
 };

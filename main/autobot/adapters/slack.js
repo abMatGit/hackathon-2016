@@ -1,6 +1,6 @@
-var Adapter = require('./adapter');
-
-var Slack = Adapter;
+var Slack = function (core) {
+    this.core = core;
+}
 
 Slack.prototype.adaptOutput = function(output) {
   return { 'text': output };
