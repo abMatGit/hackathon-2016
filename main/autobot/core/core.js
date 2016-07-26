@@ -11,7 +11,7 @@ var getStatusOfIssue = function (issue) {
 
 var commands = {
   'echo': function (input, handler) {
-    handler.ok(input);
+      handler.ok(input);
   },
 
   'getStory': function (args, handler) {

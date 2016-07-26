@@ -5,8 +5,12 @@ var Adapter = function(core) {
 }
 
 Adapter.prototype.invokeCommand = function(input, handler) {
-  var cmd = access(this.core.commands, input.command);
-  cmd(input.args, handler);
+    if (this.core.commands.hasOwnProperty(input.command)) {
+        var cmd = this.core.commands[input.command];
+        cmd(input.args, handler);
+    } else {
+        handler.err("Command not implemented.");
+    }
 }
 
 Adapter.prototype.parseInput = function(input) {

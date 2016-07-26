@@ -14,6 +14,7 @@
     "mocha": "*"
   },
   "scripts": {
+    "start": "node ./main/autobot/cli.js",
     "pretest": "rsync -av --ignore-existing ./configs/jira_credentials.js.example ./configs/jira_credentials.js",
     "test": "mocha --recursive"
   },
