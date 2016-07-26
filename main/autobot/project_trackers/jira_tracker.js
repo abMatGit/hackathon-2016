@@ -13,4 +13,18 @@ var jira_client = new JiraApi(
     config.password,
     config.api_version);
 
+Jira.prototype.getUsersIssues = function(username, callback) {
+  var client_username = '';
+  // we need to store this mapping into Dynamo or some 3rd party storage logic
+  if(username == 'amat'){
+    client_username = 'amatuszewski';
+  } else if(username == 'alan') {
+    client_username = 'alan';
+  } else {
+    client_username = 'amatuszewski';
+  }
+
+  this.client.getUsersIssues(client_username, true, callback);
+}
+
 module.exports = new Jira(jira_client);
