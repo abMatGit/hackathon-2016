@@ -2,6 +2,9 @@ var Slack = function (core) {
     this.core = core;
 }
 
+// HACKETY HACK WTF
+Slack.prototype = require('../adapters/adapter').prototype;
+
 Slack.prototype.adaptOutput = function(output) {
   return { 'text': output };
 }

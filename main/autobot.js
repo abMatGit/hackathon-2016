@@ -21,6 +21,7 @@ Autobot.prototype.process_input = function (inputString, callback) {
     try {
         var input = this.adapter.parseInput(inputString);
         this.adapter.invokeCommand(input, handler);
+
     } catch (error) {
         // Fail on the bot
         handler.err(error);
