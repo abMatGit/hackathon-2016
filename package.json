@@ -13,10 +13,8 @@
     "chai": "*",
     "mocha": "*"
   },
-  "dependencies": {
-    "jira": "0.9.*"
-  },
   "scripts": {
+    "pretest": "rsync -av --ignore-existing ./configs/jira_credentials.js.example ./configs/jira_credentials.js",
     "test": "mocha --recursive"
   },
   "dependencies": {
