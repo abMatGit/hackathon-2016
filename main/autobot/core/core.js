@@ -25,16 +25,12 @@ var commands = {
   },
 
   'getUsersIssues': function (args, handler) {
-    tracker.getUsersIssues(args, function (err, data) {
+    var username = args[0];
+    tracker.getUsersIssues(username, function (err, data) {
       if (err) {
         handler.err(err);
       } else {
-        var total = data.total;
-        var return_string = "";
-        for (var i = 0; i < total; i++) {
-          return_string = return_string + "\nIssue: " + data.issues[i].key;
-        };
-        handler.ok("User issues: " + return_string);
+        handler.ok(data);
       }
     });
   },

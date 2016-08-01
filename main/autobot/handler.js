@@ -1,6 +1,6 @@
-function Handler (callback, outputFunction) {
+function Handler (callback, adapter) {
     this.callback = callback || function () {};
-    this.outputFunction = outputFunction || defaultOutputFunction;
+    this.adapter = adapter;
 };
 
 var defaultOutputFunction = function (output) {
@@ -9,7 +9,7 @@ var defaultOutputFunction = function (output) {
 
 Handler.prototype = {
     ok: function (data) {
-        this.callback(null, this.outputFunction(data));
+        this.callback(null, this.adapter.adaptOutput(data));
     },
 
     err: function (err) {
