@@ -30,7 +30,7 @@ var commands = {
       if (err) {
         handler.err(err);
       } else {
-        handler.ok(data);
+        handler.ok(data.issues);
       }
     });
   },

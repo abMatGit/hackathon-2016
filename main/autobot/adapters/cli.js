@@ -54,7 +54,7 @@ Cli.prototype = Object.create(Adapter.prototype);
 
 // We pass this into the Handler instance
 Cli.prototype.adaptOutput = function(output) {
-  return this.parser.drawIssues(output.issues);
+  return this.parser.drawIssues(output);
 }
 
 Cli.prototype.parseInput = function(input) {

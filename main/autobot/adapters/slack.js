@@ -32,7 +32,7 @@ var Parser = function() {
       var issue = issues[issueKey];
 
       var start_statement = ':child_arrow: ';
-      var issueColour = getStatusEmoji(issue.fields.status.statusCategory.colorName) + " ";
+      var issueColour = this.getStatusEmoji(issue.fields.status.statusCategory.colorName) + " ";
       var jiraLink = "<https://lumoslabs.atlassian.net/browse/" + issue.key + "|" + issue.key + "> ";
       var summary = issue.fields.summary;
 
