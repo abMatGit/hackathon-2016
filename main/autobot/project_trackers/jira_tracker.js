@@ -1,4 +1,4 @@
-var config = require('../../../configs/jira_credentials');
+var config = require('./configs/jira_credentials');
 
 var ProjectTracker = require('./project_tracker');
 var JiraApi = require('jira').JiraApi;

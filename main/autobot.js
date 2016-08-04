@@ -1,31 +1,38 @@
-var Handler = require('./autobot/handler');
-var access = require('./lib/resource_accessor').access;
-var core = require('./autobot/core/core');
-var Adapters = require('./autobot/adapters');
+'use strict'
 
-var Autobot = function (adapter_name) {
-    switch (adapter_name) {
-        case 'slack':
-            this.adapter = new Adapters.Slack(core);
+let config = require('../configs/jira_credentials');
+let JiraApi = require('jira').JiraApi;
+let jira = new JiraApi(
+    config.protocol,
+    config.host,
+    config.port,
+    config.username,
+    config.password,
+    config.api_version);
+
+module.exports = function (input, callback) {
+    let tokens = input.split(' ')
+    let cmdName = tokens[0];
+    let cmdArgs = tokens.slice(1);
+
+    switch (cmdName) {
+        case 'status':
+            var userName= cmdArgs[0];
+
+            jira.getUsersIssues(userName, true, function (err, data) {
+                if (err) { callback(err); } else {
+                    var total = data.total;
+                    var return_string = "";
+                    for (var i = 0; i < total; i++) {
+                        return_string = return_string + "\nIssue: " + data.issues[i].key;
+                    };
+
+                    callback(null, "User issues: " + return_string);
+                }
+            });
+
             break;
-        case 'cli':
         default:
-            this.adapter = new Adapters.Cli(core);
+            callback(cmdName + " command not found.");
     }
 }
-
-// #process_input
-Autobot.prototype.process_input = function (inputString, callback) {
-    var handler = new Handler(callback, this.adapter.adaptOutput);
-
-    try {
-        var input = this.adapter.parseInput(inputString);
-        this.adapter.invokeCommand(input, handler);
-
-    } catch (error) {
-        // Fail on the bot
-        handler.err(error);
-    }
-};
-
-module.exports = Autobot;
