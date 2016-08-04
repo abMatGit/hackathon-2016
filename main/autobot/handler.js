@@ -1,15 +1,10 @@
-function Handler (callback, adapter) {
+function Handler (callback) {
     this.callback = callback || function () {};
-    this.adapter = adapter;
-};
-
-var defaultOutputFunction = function (output) {
-  return output;
 };
 
 Handler.prototype = {
     ok: function (data) {
-        this.callback(null, this.adapter.adaptOutput(data));
+        this.callback(null, data);
     },
 
     err: function (err) {

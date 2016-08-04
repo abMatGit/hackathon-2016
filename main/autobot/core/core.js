@@ -19,7 +19,7 @@ var commands = {
       if (err) {
         handler.err(err);
       } else {
-        handler.ok("Status is: " + getStatusOfIssue(issue));
+        handler.ok(issue);
       }
     });
   },
