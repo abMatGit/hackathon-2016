@@ -1,15 +1,21 @@
 'use strict'
 
-let config = require('../configs/jira_credentials');
+let config = require('../configs/config');
 let JiraApi = require('jira').JiraApi;
 let jira = new JiraApi(
-    config.protocol,
-    config.host,
-    config.port,
-    config.username,
-    config.password,
-    config.api_version);
-let github = require('github');
+    config.jira.protocol,
+    config.jira.host,
+    config.jira.port,
+    config.jira.username,
+    config.jira.password,
+    config.jira.api_version);
+
+let GithubApi = require('github');
+let github = new GithubApi({
+    debug: false //true
+});
+github.authenticate(config.github);
+
 
 module.exports = function (input, callback) {
     let tokens = input.split(' ')
@@ -34,7 +40,17 @@ module.exports = function (input, callback) {
 
             break;
         case 'prs':
-            var github
+            github.issues.getForRepo({
+                user: 'lumoslabs',
+                repo: 'LumosityMobile'
+            }, function(err, res) {
+                var result = res.reduce(function(collector, issue) {
+                    return collector + '\n' + issue.html_url;
+                }, "Pull Requests:");
+
+                callback(null, result);
+            });
+            break;
         default:
             callback(cmdName + " command not found.");
     }
