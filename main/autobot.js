@@ -9,6 +9,7 @@ let jira = new JiraApi(
     config.username,
     config.password,
     config.api_version);
+let github = require('github');
 
 module.exports = function (input, callback) {
     let tokens = input.split(' ')
@@ -17,7 +18,7 @@ module.exports = function (input, callback) {
 
     switch (cmdName) {
         case 'status':
-            var userName= cmdArgs[0];
+            var userName = cmdArgs[0];
 
             jira.getUsersIssues(userName, true, function (err, data) {
                 if (err) { callback(err); } else {
@@ -32,6 +33,8 @@ module.exports = function (input, callback) {
             });
 
             break;
+        case 'prs':
+            var github
         default:
             callback(cmdName + " command not found.");
     }

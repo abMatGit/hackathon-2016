@@ -32,7 +32,7 @@ module.exports.handler = function (event, context) {
     }
 };
 
-var processEvent = function(event, context) {
+var processEvent = function(event, callback) {
     var body = event.body;
     var params = qs.parse(body);
     var requestToken = params.token;
@@ -41,12 +41,5 @@ var processEvent = function(event, context) {
         context.fail("Invalid request token");
     }
 
-    var autobot = new Autobot();
-    autobot.process_input(params.text, function (err, result) {
-      if (err) {
-        context.succeed(err)
-      };
-
-      context.succeed(result);
-    });
+    Autobot(params.text, callback);
 };
