@@ -11,3 +11,4 @@ printResult = function(err, data) {
 
 Autobot('status alan', printResult);
 Autobot('prs', printResult);
+Autobot('sprint', printResult);
