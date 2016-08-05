@@ -7,9 +7,10 @@ var Adapter = function(core) {
 
 Adapter.prototype.invokeCommand = function(input, autobot_handler) {
 
+    adapter = this;
     adapter_handler = new Handler(function(err, data) {
       if(err) { autobot_handler.err(err); }
-      else { autobot_handler.ok(this.adaptOutput(data)); }
+      else { autobot_handler.ok(adapter.adaptOutput(data)); }
     });
 
     if (this.core.commands.hasOwnProperty(input.command)) {
