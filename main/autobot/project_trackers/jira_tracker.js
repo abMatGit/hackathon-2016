@@ -13,7 +13,8 @@ var jira_client = new JiraApi(
     config.password,
     config.api_version);
 
-Jira.prototype.getUsersIssues = function(username, callback) {
+// Temp proof of concept for promises
+Jira.prototype.getUsersIssues = function(username) {
   var client_username = '';
   // we need to store this mapping into Dynamo or some 3rd party storage logic
   if(username == 'amat'){
@@ -24,7 +25,14 @@ Jira.prototype.getUsersIssues = function(username, callback) {
     client_username = 'amatuszewski';
   }
 
-  this.client.getUsersIssues(client_username, true, callback);
+  var client = this.client;
+
+  return new Promise(function(resolve, reject) {
+    client.getUsersIssues(client_username, true, function(err, data) {
+      if (err) { reject(err); }
+      else { resolve(data.issues); }
+    });
+  });
 }
 
 module.exports = new Jira(jira_client);

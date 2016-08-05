@@ -10,38 +10,6 @@ var Parser = function() {
       args: inputTokens.slice(2)
     };
   };
-
-  this.getStatusEmoji = function(colourName) {
-    switch(colourName) {
-      case 'yellow':
-        return ':yellow_light:';
-        break;
-      case 'green':
-        return ':green_light:';
-        break;
-      case 'red':
-        return ':red_light:';
-        break;
-      default:
-        return ':yellow_light:';
-        break;
-    }
-  };
-
-  this.drawIssues = function(issues) {
-    var issueKey;
-    var issuesDrawn = "";
-    for(issueKey in issues) {
-      var issue = issues[issueKey];
-      var start_statement = ':child_arrow: ';
-      var issueColour = this.getStatusEmoji(issue.fields.status.statusCategory.colorName) + " ";
-      var jiraLink = "<https://lumoslabs.atlassian.net/browse/" + issue.key + "|" + issue.key + "> ";
-      var summary = issue.fields.summary;
-
-      issuesDrawn = issuesDrawn + start_statement + issueColour + jiraLink + summary + "\n";
-    }
-    return issuesDrawn;
-  };
 }
 
 var Drawer = function() {
@@ -83,12 +51,13 @@ var Drawer = function() {
 var Slack = function (core) {
     this.core = core;
     this.parser = new Parser();
+    this.drawer = new Drawer();
 }
 
 Slack.prototype = Object.create(Adapter.prototype);
 
 Slack.prototype.adaptOutput = function(data) {
-  return { 'text': this.parser.drawIssues(data) };
+  return { 'text': this.drawer.drawIssues(data) };
 }
 
 Slack.prototype.parseInput = function(input) {

@@ -5,20 +5,17 @@ var Adapter = function(core) {
   this.core = core;
 }
 
-Adapter.prototype.invokeCommand = function(input, autobot_handler) {
+Adapter.prototype.invokeCommand = function(input, handler) {
 
     adapter = this;
-    adapter_handler = new Handler(function(err, data) {
-      if(err) { autobot_handler.err(err); }
-      else { autobot_handler.ok(adapter.adaptOutput(data)); }
-    });
+    var cmd = this.core.commands[input.command];
+    if (cmd == undefined) { handler.err("Command not implemented."); }
 
-    if (this.core.commands.hasOwnProperty(input.command)) {
-        var cmd = this.core.commands[input.command];
-        cmd(input.args, adapter_handler);
-    } else {
-        adapter_handler.err("Command not implemented.");
-    }
+    cmd(input.args).then(function(data) {
+      handler.ok(adapter.adaptOutput(data));
+    }).catch(function(reason) {
+      handler.err(reason);
+    });
 }
 
 Adapter.prototype.parseInput = function(input) {

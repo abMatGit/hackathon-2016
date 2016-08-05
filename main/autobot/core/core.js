@@ -24,15 +24,9 @@ var commands = {
     });
   },
 
-  'getUsersIssues': function (args, handler) {
+  'getUsersIssues': function (args) {
     var username = args[0];
-    tracker.getUsersIssues(username, function (err, data) {
-      if (err) {
-        handler.err(err);
-      } else {
-        handler.ok(data.issues);
-      }
-    });
+    return tracker.getUsersIssues(username);
   },
 
   'getStatus': function (args, handler) {

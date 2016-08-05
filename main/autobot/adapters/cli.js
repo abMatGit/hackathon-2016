@@ -10,7 +10,9 @@ var Parser = function() {
       args: inputTokens.slice(1)
     };
   };
+};
 
+var Drawer = function() {
   this.getStatusEmoji = function(colourName) {
     switch(colourName) {
       case 'yellow':
@@ -27,34 +29,32 @@ var Parser = function() {
     }
   };
 
+  this.drawIssue = function(issue) {
+    var start_statement = '-> ';
+    var issueColour = this.getStatusEmoji(issue.fields.status.statusCategory.colorName) + " ";
+    var jiraLink = issue.key + " ";
+    var summary = issue.fields.summary;
+    return start_statement + issueColour + jiraLink + summary;
+  }
+
   this.drawIssues = function(issues) {
-    var issueKey;
-    var issuesDrawn = "";
     for(issueKey in issues) {
-      var issue = issues[issueKey];
-      var start_statement = '-> ';
-      var issueColour = this.getStatusEmoji(issue.fields.status.statusCategory.colorName) + " ";
-      var jiraLink = issue.key + " ";
-      var summary = issue.fields.summary;
-
-      issuesDrawn = issuesDrawn + start_statement + issueColour + jiraLink + summary + "\n";
-      console.log(start_statement + issueColour + jiraLink + summary);
+      console.log(this.drawIssue(issues[issueKey]));
     }
-
-    return issuesDrawn;
   };
 }
 
 var Cli = function (core) {
     this.core = core;
     this.parser = new Parser();
+    this.drawer = new Drawer();
 }
 
 Cli.prototype = Object.create(Adapter.prototype);
 
 // We pass this into the Handler instance
 Cli.prototype.adaptOutput = function(output) {
-  return this.parser.drawIssues(output);
+  return this.drawer.drawIssues(output);
 }
 
 Cli.prototype.parseInput = function(input) {
