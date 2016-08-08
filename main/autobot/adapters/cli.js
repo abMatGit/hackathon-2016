@@ -38,8 +38,12 @@ var Drawer = function() {
   }
 
   this.drawIssues = function(issues) {
-    for(issueKey in issues) {
-      console.log(this.drawIssue(issues[issueKey]));
+    if(issues.constructor == Array) {
+      for(issueKey in issues) {
+        console.log(this.drawIssue(issues[issueKey]));
+      }
+    } else {
+      console.log(this.drawIssue(issues));
     }
   };
 }

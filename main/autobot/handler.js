@@ -8,6 +8,7 @@ Handler.prototype = {
     },
 
     err: function (err) {
+        console.log(err);
         this.callback(err);
     }
 };

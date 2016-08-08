@@ -18,7 +18,7 @@ var Autobot = function (adapter_name) {
 
 // #process_input
 Autobot.prototype.process_input = function (inputString, callback) {
-    var handler = new Handler(callback, this.adapter);
+    var handler = new Handler(callback);
 
     try {
         var input = this.adapter.parseInput(inputString);

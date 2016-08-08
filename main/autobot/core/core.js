@@ -15,28 +15,13 @@ var commands = {
   },
 
   'getStory': function (args, handler) {
-    tracker.getStory(args, function (err, issue) {
-      if (err) {
-        handler.err(err);
-      } else {
-        handler.ok(issue);
-      }
-    });
+    var storyId = args[0];
+    return tracker.getStory(storyId);
   },
 
   'getUsersIssues': function (args) {
     var username = args[0];
     return tracker.getUsersIssues(username);
-  },
-
-  'getStatus': function (args, handler) {
-    storyId = args[0];
-    tracker.getStatus(storyId, function (err, issue) {
-      if (err) { handler.error(err) };
-
-      var owner = getOwner(issue);
-      handler.ok(owner);
-    });
   }
 }
 

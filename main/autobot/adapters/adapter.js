@@ -13,9 +13,7 @@ Adapter.prototype.invokeCommand = function(input, handler) {
 
     cmd(input.args).then(function(data) {
       handler.ok(adapter.adaptOutput(data));
-    }).catch(function(reason) {
-      handler.err(reason);
-    });
+    }).catch(handler.err);
 }
 
 Adapter.prototype.parseInput = function(input) {
