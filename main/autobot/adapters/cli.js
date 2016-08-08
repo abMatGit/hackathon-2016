@@ -13,6 +13,19 @@ var Parser = function() {
 };
 
 var Drawer = function() {
+  this.draw = function(command, data) {
+    switch(command) {
+      case 'getUsersIssues':
+        this.drawIssues(data);
+        break;
+      case 'getStory':
+        console.log(this.drawIssue(data));
+        break;
+      default:
+        console.log(data);
+    }
+  };
+
   this.getStatusEmoji = function(colourName) {
     switch(colourName) {
       case 'yellow':
@@ -38,12 +51,8 @@ var Drawer = function() {
   }
 
   this.drawIssues = function(issues) {
-    if(issues.constructor == Array) {
-      for(issueKey in issues) {
-        console.log(this.drawIssue(issues[issueKey]));
-      }
-    } else {
-      console.log(this.drawIssue(issues));
+    for(issueKey in issues) {
+      console.log(this.drawIssue(issues[issueKey]));
     }
   };
 }
@@ -54,15 +63,10 @@ var Cli = function (core) {
     this.drawer = new Drawer();
 }
 
-Cli.prototype = Object.create(Adapter.prototype);
-
-// We pass this into the Handler instance
-Cli.prototype.adaptOutput = function(output) {
-  return this.drawer.drawIssues(output);
-}
-
-Cli.prototype.parseInput = function(input) {
-  return this.parser.parseInput(input);
+Cli.prototype.adaptOutput = function(command, data) {
+  this.drawer.draw(command, data);
 };
+
+Cli.prototype = Object.create(Adapter.prototype);
 
 module.exports = Cli

@@ -2,7 +2,6 @@ var Adapter = require('../adapters/adapter');
 
 var Parser = function() {
   this.parseInput = function(input) {
-    // input = autobot getStatus IOS-9999
     var inputTokens = input.split(' ');
 
     return {
@@ -13,6 +12,19 @@ var Parser = function() {
 }
 
 var Drawer = function() {
+  this.draw = function(command, data) {
+    switch(command) {
+      case 'getUsersIssues':
+        console.log(this.drawIssues(data));
+        break;
+      case 'getStory':
+        console.log(this.drawIssue(data));
+        break;
+      default:
+        console.log(data);
+    }
+  }
+
   this.getStatusEmoji = function(colourName) {
     switch(colourName) {
       case 'yellow':
@@ -56,12 +68,8 @@ var Slack = function (core) {
 
 Slack.prototype = Object.create(Adapter.prototype);
 
-Slack.prototype.adaptOutput = function(data) {
-  return { 'text': this.drawer.drawIssues(data) };
+Slack.prototype.adaptOutput = function(command, data) {
+  return { 'text': this.drawer.draw(command, data) };
 }
-
-Slack.prototype.parseInput = function(input) {
-  return this.parser.parseInput(input);
-};
 
 module.exports = Slack

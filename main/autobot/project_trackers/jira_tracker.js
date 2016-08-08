@@ -1,8 +1,6 @@
 var config = require('../../../configs/jira_credentials');
-
 var ProjectTracker = require('./project_tracker');
 var JiraApi = require('jira').JiraApi;
-
 var Jira = ProjectTracker;
 
 var jira_client = new JiraApi(
@@ -13,18 +11,21 @@ var jira_client = new JiraApi(
     config.password,
     config.api_version);
 
-// Temp proof of concept for promises
-Jira.prototype.getUsersIssues = function(username) {
-  var client_username = '';
-  // we need to store this mapping into Dynamo or some 3rd party storage logic
-  if(username == 'amat'){
-    client_username = 'amatuszewski';
-  } else if(username == 'alan') {
-    client_username = 'alan';
-  } else {
-    client_username = 'amatuszewski';
+var getJiraUsername = function(username) {
+  switch(username) {
+    case 'amat':
+      return 'amatuszewski';
+      break;
+    case 'alan':
+      return 'alan';
+      break;
+    default:
+      return username;
   }
+}
 
+Jira.prototype.getUsersIssues = function(username) {
+  var client_username = getJiraUsername(username);
   var client = this.client;
 
   return new Promise(function(resolve, reject) {

@@ -5,16 +5,12 @@ var Core = function(commands, tracker) {
   this.tracker = tracker;
 }
 
-var getStatusOfIssue = function (issue) {
-  return issue.fields.status.name;
-};
-
 var commands = {
   'echo': function (input, handler) {
       handler.ok(input);
   },
 
-  'getStory': function (args, handler) {
+  'getStory': function (args) {
     var storyId = args[0];
     return tracker.getStory(storyId);
   },
