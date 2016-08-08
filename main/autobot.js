@@ -9,6 +9,8 @@ var Autobot = function (adapter_name) {
             this.adapter = new Adapters.Slack(core);
             break;
         case 'cli':
+            this.adapter = new Adapters.Cli(core);
+            break;
         default:
             this.adapter = new Adapters.Cli(core);
     }
@@ -16,7 +18,7 @@ var Autobot = function (adapter_name) {
 
 // #process_input
 Autobot.prototype.process_input = function (inputString, callback) {
-    var handler = new Handler(callback, this.adapter.adaptOutput);
+    var handler = new Handler(callback);
 
     try {
         var input = this.adapter.parseInput(inputString);

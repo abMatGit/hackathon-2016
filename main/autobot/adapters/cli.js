@@ -2,20 +2,21 @@ var Adapter = require('../adapters/adapter');
 
 var Parser = function() {
   this.parseInput = function(input) {
-    var inputTokens = input.split(' ');
+    // input = autobot getStatus IOS-9999
+    var inputTokens = input.trim().split(' ')
 
     return {
-      command: inputTokens[1],
-      args: inputTokens.slice(2)
+      command: inputTokens[0],
+      args: inputTokens.slice(1)
     };
   };
-}
+};
 
 var Drawer = function() {
   this.draw = function(command, data) {
     switch(command) {
       case 'getUsersIssues':
-        console.log(this.drawIssues(data));
+        this.drawIssues(data);
         break;
       case 'getStory':
         console.log(this.drawIssue(data));
@@ -23,53 +24,49 @@ var Drawer = function() {
       default:
         console.log(data);
     }
-  }
+  };
 
   this.getStatusEmoji = function(colourName) {
     switch(colourName) {
       case 'yellow':
-        return ':yellow_light:';
+        return '[IN PROGRESS]';
         break;
       case 'green':
-        return ':green_light:';
+        return '[COMPLETED]';
         break;
       case 'red':
-        return ':red_light:';
+        return '[BLOCKED]';
         break;
       default:
-        return ':yellow_light:';
-        break;
+        return '[IN PROGRESS]';
     }
   };
 
   this.drawIssue = function(issue) {
-    var start_statement = ':child_arrow: ';
+    var start_statement = '-> ';
     var issueColour = this.getStatusEmoji(issue.fields.status.statusCategory.colorName) + " ";
-    var jiraLink = "<https://lumoslabs.atlassian.net/browse/" + issue.key + "|" + issue.key + "> ";
+    var jiraLink = issue.key + " ";
     var summary = issue.fields.summary;
-    return start_statement + issueColour + jiraLink + summary + "\n";
+    return start_statement + issueColour + jiraLink + summary;
   }
 
   this.drawIssues = function(issues) {
-    var issuesDrawn = "";
-
-    for(var issueKey in issues) {
-      issuesDrawn = issuesDrawn + this.drawIssue(issues[issueKey]);
+    for(issueKey in issues) {
+      console.log(this.drawIssue(issues[issueKey]));
     }
-    return issuesDrawn;
   };
 }
 
-var Slack = function (core) {
+var Cli = function (core) {
     this.core = core;
     this.parser = new Parser();
     this.drawer = new Drawer();
 }
 
-Slack.prototype = Object.create(Adapter.prototype);
+Cli.prototype.adaptOutput = function(command, data) {
+  this.drawer.draw(command, data);
+};
 
-Slack.prototype.adaptOutput = function(command, data) {
-  return { 'text': this.drawer.draw(command, data) };
-}
+Cli.prototype = Object.create(Adapter.prototype);
 
-module.exports = Slack
+module.exports = Cli

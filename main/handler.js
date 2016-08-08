@@ -41,12 +41,13 @@ var processEvent = function(event, context) {
         context.fail("Invalid request token");
     }
 
-    var autobot = new Autobot();
+    var autobot = new Autobot('slack');
     autobot.process_input(params.text, function (err, result) {
       if (err) {
+        console.log(err);
         context.succeed(err)
       };
-
+      console.log(result);
       context.succeed(result);
     });
 };
