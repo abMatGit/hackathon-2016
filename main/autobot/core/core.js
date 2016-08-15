@@ -1,5 +1,5 @@
 var jiraResource = require('../resources/jira');
-var access = require('../..//lib/resource_accessor').access;
+var access = require('../../lib/resource_accessor').access;
 
 class Core {
   constructor(commands, resource) {
@@ -18,10 +18,17 @@ class Core {
 }
 
 var commands = {
+  echo: function (args) {
+    return new Promise(function(resolve, reject) {
+      resolve(args);
+    });
+  },
+
   get: function (args) {
     var username = args[0];
     return this.resource.getUsersIssues(username);
   }
+
 }
 
 module.exports = new Core(commands, jiraResource);

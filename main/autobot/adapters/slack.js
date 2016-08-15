@@ -3,7 +3,7 @@ var Adapter = require('../adapters/adapter');
 
 class Slack extends Adapter {
   parse(input) {
-    tokens = input.split(' ');
+    var tokens = input.split(' ');
     return { command: tokens[1], args: tokens.slice(2) }
   }
 }
