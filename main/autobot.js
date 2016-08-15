@@ -1,31 +1,26 @@
 var Handler = require('./autobot/handler');
 var access = require('./lib/resource_accessor').access;
-var core = require('./autobot/core/core');
 var Adapters = require('./autobot/adapters');
 
-var Autobot = function (adapter_name) {
-    switch (adapter_name) {
-        case 'slack':
-            this.adapter = new Adapters.Slack(core);
-            break;
-        case 'cli':
-        default:
-            this.adapter = new Adapters.Cli(core);
-    }
-}
+class Autobot {
+  constructor(adapter) {
+    var adapterClass = access(Adapters, adapter);
+    this.adapter = new adapterClass(this);
 
-// #process_input
-Autobot.prototype.process_input = function (inputString, callback) {
-    var handler = new Handler(callback, this.adapter.adaptOutput);
+  }
 
-    try {
-        var input = this.adapter.parseInput(inputString);
-        this.adapter.invokeCommand(input, handler);
+  receive(input, cb) {
+    this.handler = new Handler(cb);
+    this.adapter.receive(input)
+  }
 
-    } catch (error) {
-        // Fail on the bot
-        handler.err(error);
-    }
+  respond(msg) {
+    this.handler.ok(msg);
+  }
+
+  error(err) {
+    this.handler.error(err);
+  }
 };
 
 module.exports = Autobot;

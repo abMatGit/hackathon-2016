@@ -9,6 +9,11 @@ var Autobot = require('./autobot');
 
 kmsEncyptedToken = "CiDW440/VM2MfOqfynzRZtgDXPyh0f9dsXta46rGATW7WBKfAQEBAgB41uONP1TNjHzqn8p80WbYA1z8odH/XbF7WuOqxgE1u1gAAAB2MHQGCSqGSIb3DQEHBqBnMGUCAQAwYAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwWvAkHtUVOUUzWASMCARCAM25NO0XPlV8HgWylaVSeiB7WXKPGSfFdEbNYOTTmN99gjgDOUSKY6dPLElANVJ0jWIlZqw==";
 
+var slack_callback = function (err, result) {
+  if(err) { context.succeed(err) }
+  else { context.succeed(result) }
+};
+
 module.exports.handler = function (event, context) {
     if (token) {
         // Container reuse, simply process the event with the key in memory
@@ -41,12 +46,6 @@ var processEvent = function(event, context) {
         context.fail("Invalid request token");
     }
 
-    var autobot = new Autobot();
-    autobot.process_input(params.text, function (err, result) {
-      if (err) {
-        context.succeed(err)
-      };
-
-      context.succeed(result);
-    });
+    var autobot = new Autobot('slack', slack_callback);
+    autobot.receive(params.text);
 };

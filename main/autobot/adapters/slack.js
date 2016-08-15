@@ -1,23 +1,11 @@
 var Adapter = require('../adapters/adapter');
 
-var Slack = function (core) {
-    this.core = core;
+
+class Slack extends Adapter {
+  parse(input) {
+    tokens = input.split(' ');
+    return { command: tokens[1], args: tokens.slice(2) }
+  }
 }
-
-Slack.prototype = Object.create(Adapter.prototype);
-
-Slack.prototype.adaptOutput = function(output) {
-  return { 'text': output };
-}
-
-Slack.prototype.parseInput = function(input) {
-  // input = autobot getStatus IOS-9999
-  var inputTokens = input.split(' ');
-
-  return {
-    command: inputTokens[1],
-    args: inputTokens.slice(2)
-  };
-};
 
 module.exports = Slack

@@ -1,53 +1,27 @@
-var tracker = require('../project_trackers/jira_tracker');
+var jiraResource = require('../resources/jira');
+var access = require('../..//lib/resource_accessor').access;
 
-var Core = function(commands, tracker) {
-  this.commands = commands;
-  this.tracker = tracker;
-}
+class Core {
+  constructor(commands, resource) {
+    this.resource = resource;
+    this.commands = commands;
+  }
 
-var getStatusOfIssue = function (issue) {
-  return issue.fields.status.name;
-};
+  process(inputTokens) {
+    var commandToken = inputTokens['command'];
+    var args         = inputTokens['args'];
 
-var commands = {
-  'echo': function (input, handler) {
-      handler.ok(input);
-  },
-
-  'getStory': function (args, handler) {
-    tracker.getStory(args, function (err, issue) {
-      if (err) {
-        handler.err(err);
-      } else {
-        handler.ok("Status is: " + getStatusOfIssue(issue));
-      }
-    });
-  },
-
-  'getUsersIssues': function (args, handler) {
-    tracker.getUsersIssues(args, function (err, data) {
-      if (err) {
-        handler.err(err);
-      } else {
-        var total = data.total;
-        var return_string = "";
-        for (var i = 0; i < total; i++) {
-          return_string = return_string + "\nIssue: " + data.issues[i].key;
-        };
-        handler.ok("User issues: " + return_string);
-      }
-    });
-  },
-
-  'getStatus': function (args, handler) {
-    storyId = args[0];
-    tracker.getStatus(storyId, function (err, issue) {
-      if (err) { handler.error(err) };
-
-      var owner = getOwner(issue);
-      handler.ok(owner);
-    });
+    // TODO: replace a simple 'access' with a regex or intelligent mapping
+    var cmd = access(this.commands, commandToken).bind(this);
+    return cmd(args);
   }
 }
 
-module.exports = new Core(commands, tracker);
+var commands = {
+  get: function (args) {
+    var username = args[0];
+    return this.resource.getUsersIssues(username);
+  }
+}
+
+module.exports = new Core(commands, jiraResource);
