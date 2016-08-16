@@ -10,6 +10,7 @@
     "url": "git://github.com/"
   },
   "devDependencies": {
+    "babel-register": "^6.11.6",
     "chai": "*",
     "mocha": "*"
   },
