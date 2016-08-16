@@ -6,12 +6,12 @@ class Autobot {
   constructor(adapter) {
     var adapterClass = access(Adapters, adapter);
     this.adapter = new adapterClass(this);
-
+    this.handler = null;
   }
 
   receive(input, cb) {
     this.handler = new Handler(cb);
-    this.adapter.receive(input)
+    this.adapter.receive(input);
   }
 
   respond(msg) {
@@ -19,7 +19,9 @@ class Autobot {
   }
 
   error(err) {
+    console.log('hello error!');
     this.handler.error(err);
+    throw err;
   }
 };
 

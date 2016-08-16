@@ -12,14 +12,18 @@ class Cli extends Adapter {
   }
 
   render(data) {
-    var msg = "\n Data will be rendered: \n";
-    var issues = data.issues;
-    for(var issue in issues) {
-      var iss = issues[issue];
-      msg  = msg + "->\n";
-      msg  = msg + iss.key + "\n";
+    try {
+      var msg = "\n Data will be rendered: \n";
+      var issues = data.issues;
+      for(var issue in issues) {
+        var iss = issues[issue];
+        msg  = msg + "->\n";
+        msg  = msg + iss.key + "\n";
+      }
+      this.respond(msg);
+    } catch(err) {
+      this.error(err);
     }
-    this.respond(msg);
   }
 }
 

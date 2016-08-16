@@ -20,7 +20,8 @@ class Core {
 var commands = {
   echo: function (args) {
     return new Promise(function(resolve, reject) {
-      resolve(args);
+      if(args == null) { reject(args); }
+      else { resolve(args); }
     });
   },
 

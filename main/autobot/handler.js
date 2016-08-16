@@ -1,5 +1,5 @@
 function Handler (callback) {
-    this.callback = callback || function () {};
+    this.callback = callback;
 };
 
 Handler.prototype = {

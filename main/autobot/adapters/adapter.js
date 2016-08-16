@@ -34,8 +34,8 @@ class Adapter {
   */
   receive(input) {
     var inputTokens = this.parse(input);
-    var success = function(data) { this.render(data) }.bind(this);
-    var failure = function(err)  { this.error(err) }.bind(this);
+    var success = function(data) { console.log('SUCCESS!'); this.render(data) }.bind(this);
+    var failure = function(err)  { console.log('FAILURE!'); this.error(err) }.bind(this);
 
     this.core.process(inputTokens).then(success, failure);
   }
@@ -77,7 +77,9 @@ class Adapter {
     Return value:
       A properly formatted/rendered form of the data for the adapter source
   */
-  render(data) { return data; }
+  render(data) {
+    this.respond(data);
+  }
 }
 
 module.exports = Adapter;
