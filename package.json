@@ -21,6 +21,8 @@
   },
   "dependencies": {
     "dep": "0.0.2",
+    "google-auth-library": "^0.9.8",
+    "googleapis": "^12.2.0",
     "jira": "^0.9.2",
     "strict-mode": "^1.0.0"
   }
