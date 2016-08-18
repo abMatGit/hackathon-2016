@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "chai": "*",
+    "chai-as-promised": "^5.3.0",
     "mocha": "*"
   },
   "scripts": {

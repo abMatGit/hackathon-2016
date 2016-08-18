@@ -1,23 +1,32 @@
-var assert = require('chai').assert;
+var chai = require('chai');
+var expect = chai.expect;
+var chaiAsPromised = require("chai-as-promised");
+chai.use(chaiAsPromised);
+
 var Autobot = require('../main/autobot');
 
 describe('Autobot', function () {
-    var autobot = new Autobot('slack');
+    var autobot = null;
 
-    it('uses slack adapter and the echo default command', function (done) {
-        autobot.receive('autobot echo wtf', function (err, data) {
-            assert.equal(2, 1, 'nonsense');
+    context('slack adapter', function() {
+        beforeEach(function() {
+            autobot = new Autobot('slack');
+        });
+
+        it('uses slack adapter and the echo default command', function () {
+            var promise = autobot.receive('autobot echo wtf');
+            return expect(promise).to.eventually.become(["wtf"]);
         });
     });
 
-    context('for the cli adapter', function() {
-      var autobot = new Autobot('cli');
 
-      it('uses slack adapter and the echo default command', function (done) {
-          autobot.receive('echo wtf', function (err, data) {
-              assert.deepEqual(data, { text: ['wtf'] });
-              done();
-          });
-      });
+    context('for the cli adapter', function() {
+        beforeEach(function() {
+            autobot = new Autobot('cli');
+        });
+
+        it('uses cli adapter and the echo default command', function () {
+            return expect(autobot.receive('echo wtf')).to.eventually.become({ text: ['wtf']});
+        });
     });
 });

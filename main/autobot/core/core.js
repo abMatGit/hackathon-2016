@@ -7,26 +7,22 @@ class Core {
     this.commands = commands;
   }
 
-  process(inputTokens, callback) {
+  process(inputTokens) {
     var commandToken = inputTokens['command'];
     var args         = inputTokens['args'];
 
     // TODO: replace a simple 'access' with a regex or intelligent mapping
     var cmd = access(commands, commandToken)
-    return cmd(args, callback);
+    return cmd(args);
   }
 }
 
 var commands = {
-    echo: function (args, callback) {
-        callback(args);
-        //return new Promise(function(resolve, reject) {
-      ////if (args) { resolve(args); }
-      ////else { reject(args); }
-        //console.log(callback);
-        //callback();
-        //// resolve(args);
-    //});
+    echo: function (args) {
+        return new Promise(function(resolve, reject) {
+            if (args) { resolve(args); }
+            else { reject(args); }
+        });
   },
 
   get: function (args) {

@@ -9,9 +9,8 @@ class Autobot {
     this.handler = null;
   }
 
-  receive(input, cb) {
-    //this.handler = new Handler(cb);
-    this.adapter.receive(input, cb);
+  receive(input) {
+    return this.adapter.receive(input);
   }
 
   respond(msg) {
