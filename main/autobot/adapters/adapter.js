@@ -32,12 +32,23 @@ class Adapter {
       We handle the response of the core module via the success/failure
       methods which delegate to render/error
   */
-  receive(input) {
+  receive(input, callback) {
     var inputTokens = this.parse(input);
-    var success = function(data) { console.log('SUCCESS!'); this.render(data) }.bind(this);
-    var failure = function(err)  { console.log('FAILURE!'); this.error(err) }.bind(this);
 
-    this.core.process(inputTokens).then(success, failure);
+    this.core.process(inputTokens, callback);
+        //.then(function(data) {
+        //console.log('sucess!');
+        //console.log(data);
+        //callback(null, data);
+    //}, function(error) {
+        //console.log('error!');
+        //console.log(error);
+        //callback(error);
+    //}).catch(function(error) {
+        //console.log('catch');
+        //console.log(error);
+        //callback(error);
+    //});
   }
 
   /*
