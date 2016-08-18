@@ -1,9 +1,8 @@
 var access = require('../..//lib/resource_accessor').access;
-var Core = require('../core/core');
+var defaultCore = require('../core/core').default;
 
 class Adapter {
-  constructor(autobot, core = Core) {
-    this.autobot = autobot;
+  constructor(core = defaultCore) {
     this.core = core;
   }
 
@@ -17,7 +16,8 @@ class Adapter {
       A hash of parsed tokens that is readable by the core
   */
   parse(input) {
-    return { command: '', args: [''] }
+    var tokens = input.split(' ');
+    return { command: tokens[0], args: tokens.slice(1) }
   }
 
   /*
@@ -34,36 +34,7 @@ class Adapter {
   */
   receive(input) {
     var inputTokens = this.parse(input);
-    var success = function(data) { console.log('SUCCESS!'); this.render(data) }.bind(this);
-    var failure = function(err)  { console.log('FAILURE!'); this.error(err) }.bind(this);
-
-    this.core.process(inputTokens).then(success, failure);
-  }
-
-  /*
-    This method forwards a rendered response back to autobot
-
-    Arguments:
-      msg - A rendered message object
-
-    Return value:
-      Returns nothing after sending the message back to autobot
-  */
-  respond(msg) {
-    this.autobot.respond(msg);
-  }
-
-  /*
-    This method handles errors by delegating back up to autobot
-
-    Arguments:
-      err - An Error object.
-
-    Return value:
-      Returns nothing
-  */
-  error(err) {
-    this.autobot.error(err);
+    return this.core.process(inputTokens).then(this.render);
   }
 
   /*
@@ -78,7 +49,7 @@ class Adapter {
       A properly formatted/rendered form of the data for the adapter source
   */
   render(data) {
-    this.respond(data);
+    return data;
   }
 }
 

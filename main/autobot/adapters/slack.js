@@ -1,6 +1,5 @@
 var Adapter = require('../adapters/adapter');
 
-
 class Slack extends Adapter {
   parse(input) {
     var tokens = input.split(' ');
@@ -9,13 +8,6 @@ class Slack extends Adapter {
 
   render(data) {
     return { text: data };
-    //this.respond({ text: data });
-    /*
-    try {
-      console.log('in the respond block');
-    } catch(err) {
-      this.error(err);
-    }*/
   }
 }
 

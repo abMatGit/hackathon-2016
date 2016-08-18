@@ -6,7 +6,7 @@ repl.start({
 });
 
 var Autobot = require('../autobot');
-var dudeBot = new Autobot('slack');
+var dudeBot = new Autobot('cli');
 
 function evalAutobot(input, context, filename, callback) {
     dudeBot.receive(input, callback);

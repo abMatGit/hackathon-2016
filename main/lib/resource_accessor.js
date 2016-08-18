@@ -4,7 +4,6 @@ function access (resource, key) {
 
     if (!result) {
         var error = new ResourceAccessError(resource, key);
-        console.error(error);
         throw error;
     }
 
