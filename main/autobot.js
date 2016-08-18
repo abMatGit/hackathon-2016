@@ -10,8 +10,8 @@ class Autobot {
   }
 
   receive(input, cb) {
-    this.handler = new Handler(cb);
-    this.adapter.receive(input);
+    //this.handler = new Handler(cb);
+    this.adapter.receive(input, cb);
   }
 
   respond(msg) {
