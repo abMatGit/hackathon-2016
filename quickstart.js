@@ -6,7 +6,11 @@ var googleAuth = require('google-auth-library');
 
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/drive-nodejs-quickstart.json
-var SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly'];
+var SCOPES = [  'https://docs.google.com/feeds',
+                'https://spreadsheets.google.com/feeds',
+                'https://www.googleapis.com/auth/drive.metadata.readonly',
+                'https://www.googleapis.com/auth/drive.file'
+             ];
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
 var TOKEN_PATH = TOKEN_DIR + 'drive-nodejs-quickstart.json';
@@ -101,7 +105,47 @@ function storeToken(token) {
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
+
+var serviceSheets = google.sheets('v4');
+function getSheets(auth) {
+  return new Promise(function(resolve, reject) {
+    serviceSheets.spreadsheets.get({
+      auth: auth,
+      spreadsheetId: '1-UrXY7kbhXDV-LgAks_qEJjKfc0iOq56dPXxeYxuXtQ'
+    }, function(err, response) {
+      if (err) { reject(err) }
+      else { console.log(response.sheets[1]); resolve(auth, response.sheets[1]); }
+    });
+  });
+}
+
+function updateSheetValue(auth, sheet) {
+  return new Promise(function(resolve, reject) {
+    serviceSheets.spreadsheets.values.append({
+      auth: auth,
+      spreadsheetId: '1-UrXY7kbhXDV-LgAks_qEJjKfc0iOq56dPXxeYxuXtQ',
+      range: 'Autobot!B1:C1',
+      valueInputOption: 'USER_ENTERED',
+      resource: {
+        range: 'Autobot!B1:C1',
+        majorDimension: 'COLUMNS',
+        values: [ [null], ['hello'], ['world']]
+      }
+    }, function(err, response) {
+      if (err) { reject(err); }
+      else { console.log(response); resolve(response); }
+    });
+    resolve();
+  });
+}
+
 function listFiles(auth) {
+  var serviceSheets = google.sheets('v4');
+
+  var success = function(data) { console.log('SUCCESS'); };
+  var failure = function(err) { console.log('FAILURE'); console.log(err); };
+  getSheets(auth).then(updateSheetValue).then(success, failure);
+  /*
   var service = google.drive('v3');
   service.files.list({
     auth: auth,
@@ -123,4 +167,5 @@ function listFiles(auth) {
       }
     }
   });
+  */
 }
