@@ -8,6 +8,6 @@ repl.start({
 var Autobot = require('../autobot');
 var dudeBot = new Autobot('cli');
 
-function evalAutobot(cmd, context, filename, callback) {
-    dudeBot.process_input(cmd, callback);
+function evalAutobot(input, context, filename, callback) {
+    dudeBot.receive(input, callback);
 }

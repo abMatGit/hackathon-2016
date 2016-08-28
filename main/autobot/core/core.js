@@ -1,53 +1,66 @@
-var tracker = require('../project_trackers/jira_tracker');
+var jiraResource = require('../resources/jira');
+var access = require('../../lib/resource_accessor').access;
 
-var Core = function(commands, tracker) {
-  this.commands = commands;
-  this.tracker = tracker;
-}
+class Core {
+  constructor(commands, resource) {
+    this.resource = resource;
+    this.commands = commands;
+  }
 
-var getStatusOfIssue = function (issue) {
-  return issue.fields.status.name;
-};
+  /*
+    This method will invoke the command from the input tokens.
 
-var commands = {
-  'echo': function (input, handler) {
-      handler.ok(input);
-  },
+    Arguments:
+      inputTokens - A hash of tokens which are identifiable as command and arguments
+                    Should contain the following tokens:
+                      command -> this will map directly to one of the core methods
+                      args -> the arguments utilized for the core
+                      options -> optional settings/flags/arguments
 
-  'getStory': function (args, handler) {
-    tracker.getStory(args, function (err, issue) {
-      if (err) {
-        handler.err(err);
-      } else {
-        handler.ok("Status is: " + getStatusOfIssue(issue));
-      }
-    });
-  },
+    Return value:
+      A promise object representing the command's asynchronous call
+  */
+  process(inputTokens) {
+    var commandToken = inputTokens['command'];
+    var args         = inputTokens['args'];
 
-  'getUsersIssues': function (args, handler) {
-    tracker.getUsersIssues(args, function (err, data) {
-      if (err) {
-        handler.err(err);
-      } else {
-        var total = data.total;
-        var return_string = "";
-        for (var i = 0; i < total; i++) {
-          return_string = return_string + "\nIssue: " + data.issues[i].key;
-        };
-        handler.ok("User issues: " + return_string);
-      }
-    });
-  },
+    var cmd = access(this.commands, commandToken).bind(this);
 
-  'getStatus': function (args, handler) {
-    storyId = args[0];
-    tracker.getStatus(storyId, function (err, issue) {
-      if (err) { handler.error(err) };
-
-      var owner = getOwner(issue);
-      handler.ok(owner);
-    });
+    return cmd(args);
   }
 }
 
-module.exports = new Core(commands, tracker);
+var commands = {
+  /*
+    A simple echo call.
+
+    Arguments:
+      args - Should contain just a simple string
+
+    Return value:
+      The same as the input value -> args
+  */
+  echo: function (args) {
+    return new Promise(function(resolve, reject) {
+      if (args) { resolve(args); }
+      else { reject(args); }
+    });
+  },
+
+  /*
+    This should be a fetch for data from the resource
+
+    Arguments:
+      args - should contain ids or query information to help the get call
+
+    Return value:
+      Data pertaining to the query response from the resouce.
+  */
+  get: function (args) {
+    var username = args[0];
+    return this.resource.getUsersIssues(username);
+  }
+}
+
+module.exports.Core = Core;
+module.exports.default = new Core(commands, jiraResource);
