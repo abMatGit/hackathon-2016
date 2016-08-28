@@ -42,8 +42,8 @@ var commands = {
   */
   echo: function (args) {
     return new Promise(function(resolve, reject) {
-      if(args == null) { reject(args); }
-      else { resolve(args); }
+      if (args) { resolve(args); }
+      else { reject(args); }
     });
   },
 
