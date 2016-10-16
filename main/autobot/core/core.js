@@ -1,7 +1,10 @@
 'use strict';
 
 var jiraResource = require('../resources/jira');
+var googleResource = require('../resources/google');
 var access = require('../../lib/resource_accessor').access;
+
+var doNothing = new Promise(function(resolve, reject) { resolve(); });
 
 class Core {
   constructor(commands, resource) {
@@ -26,13 +29,15 @@ class Core {
     var commandToken = inputTokens['command'];
     var args         = inputTokens['args'];
 
-    var cmd = access(this.commands, commandToken).bind(this);
-
-    return cmd(args);
+    if(commandToken == '') { return doNothing; }
+    else {
+      var cmd = access(this.commands, commandToken).bind(this);
+      return cmd(args);
+    }
   }
 }
 
-var commands = {
+var defaultCommands = {
   /*
     A simple echo call.
 
@@ -64,5 +69,16 @@ var commands = {
   }
 }
 
+var googleCommands = {
+  get: function(args) {
+    return this.resource.get(args);
+  },
+
+  update: function(args) {
+    return this.resource.update(args);
+  }
+}
+
 module.exports.Core = Core;
-module.exports.default = new Core(commands, jiraResource);
+module.exports.default = new Core(defaultCommands, jiraResource);
+module.exports.google  = new Core(googleCommands, googleResource);

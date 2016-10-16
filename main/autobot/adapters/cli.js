@@ -2,6 +2,28 @@
 
 var Adapter = require('../adapters/adapter');
 
+function parsePlankTimes(input) {
+  var commandToken = input.trim().split(' ')[0];
+
+  var regexUsers = /(@?)([a-zA-Z]*)(:?)(\ )*(\d+)/gi
+  var regexUser = /(@?)([a-zA-Z]*)(:?)(\ )*(\d+)/i
+
+  var matchedUsers = input.match(regexUsers);
+  var usernameGroup = 2;
+  var timeGroup = 5;
+  var parsedArgs = {};
+
+  for(var i = 0; i < matchedUsers.length; i++) {
+    var matchedUser = matchedUsers[i].match(regexUser);
+    var username = matchedUser[usernameGroup];
+    var plankTime = matchedUser[timeGroup];
+
+    parsedArgs[username] = plankTime;
+  };
+
+  return { command: commandToken, args: parsedArgs };
+}
+
 class Cli extends Adapter {
 
   /* Right now this parsing is very dumb.
@@ -10,8 +32,11 @@ class Cli extends Adapter {
            for more intelligent mapping.
   */
   parse(input) {
+    return parsePlankTimes(input);
+    /*
     var tokens = input.trim().split(' ');
     return { command: tokens[0], args: tokens.slice(1) }
+    */
   }
 
 
