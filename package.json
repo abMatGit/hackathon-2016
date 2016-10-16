@@ -17,6 +17,7 @@
   "scripts": {
     "start": "node ./main/autobot/cli.js",
     "pretest": "rsync -av --ignore-existing ./configs/jira_credentials.js.example ./configs/jira_credentials.js",
+    "pretest": "rsync -av --ignore-existing ./configs/user_mappings.js.example ./configs/user_mappings.js",
     "test": "mocha --recursive"
   },
   "dependencies": {

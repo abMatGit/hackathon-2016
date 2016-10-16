@@ -32,11 +32,11 @@ class Cli extends Adapter {
            for more intelligent mapping.
   */
   parse(input) {
-    return parsePlankTimes(input);
-    /*
-    var tokens = input.trim().split(' ');
-    return { command: tokens[0], args: tokens.slice(1) }
-    */
+    if(this.core.type() == 'google') { return parsePlankTimes(input); }
+    else if(this.core.type() == 'default') {
+      var tokens = input.trim().split(' ');
+      return { command: tokens[0], args: tokens.slice(1) }
+    }
   }
 
 

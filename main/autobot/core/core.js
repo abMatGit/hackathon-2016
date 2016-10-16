@@ -35,9 +35,14 @@ class Core {
       return cmd(args);
     }
   }
+
+  type() {
+    return access(this.commands, 'type').bind(this).call();
+  }
 }
 
 var defaultCommands = {
+  type: function() { return 'default'; },
   /*
     A simple echo call.
 
@@ -70,6 +75,8 @@ var defaultCommands = {
 }
 
 var googleCommands = {
+  type: function() { return 'google';},
+
   get: function(args) {
     return this.resource.get(args);
   },
