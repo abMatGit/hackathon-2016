@@ -1,3 +1,5 @@
+'use strict';
+
 var Adapter = require('../adapters/adapter');
 
 class Slack extends Adapter {
@@ -7,7 +9,7 @@ class Slack extends Adapter {
   }
 
   render(data) {
-    return { text: data };
+    return { text: JSON.stringify(data) };
   }
 }
 

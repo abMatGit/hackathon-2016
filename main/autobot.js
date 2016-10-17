@@ -1,3 +1,5 @@
+'use strict';
+
 var Handler = require('./autobot/handler');
 var access = require('./lib/resource_accessor').access;
 var Adapters = require('./autobot/adapters');
@@ -8,8 +10,8 @@ class Autobot {
     this.adapter = new adapterClass();
   }
 
-  receive(input, callback) {
-    return this.adapter.receive(input).then(callback);
+  receive(input) {
+    return this.adapter.receive(input);
   }
 };
 

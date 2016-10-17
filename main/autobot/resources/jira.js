@@ -1,3 +1,5 @@
+'use strict';
+
 var config = require('../../../configs/jira_credentials');
 var JiraApi = require('jira').JiraApi;
 

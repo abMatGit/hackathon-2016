@@ -1,3 +1,5 @@
+'use strict';
+
 var Adapter = require('../adapters/adapter');
 
 class Cli extends Adapter {

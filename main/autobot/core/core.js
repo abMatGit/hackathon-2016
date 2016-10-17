@@ -1,3 +1,5 @@
+'use strict';
+
 var jiraResource = require('../resources/jira');
 var access = require('../../lib/resource_accessor').access;
 
