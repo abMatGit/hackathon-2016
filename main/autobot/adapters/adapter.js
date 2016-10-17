@@ -1,9 +1,12 @@
+'use strict';
+
 var access = require('../..//lib/resource_accessor').access;
 var defaultCore = require('../core/core').default;
 
 class Adapter {
-  constructor(core = defaultCore) {
-    this.core = core;
+  constructor(core) {
+    if(core) { this.core = core; }
+    else { this.core = defaultCore; }
   }
 
   /*
