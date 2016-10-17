@@ -9,7 +9,7 @@ module.exports.slack = function(event, context, callback) {
   var statusCode, text;
   var body = event.body;
   var params = qs.parse(body);
-  var requestToken = slackToken;
+  var requestToken = params.token;
 
   var success = function(result) {
     var response = {
@@ -29,6 +29,6 @@ module.exports.slack = function(event, context, callback) {
       callback("Invalid request token");
   } else {
     var autobot = new Autobot('slack');
-    autobot.receive('plankbot get amat').then(success, failure);
+    autobot.receive(params.text).then(success, failure);
   }
 };
