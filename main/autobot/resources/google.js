@@ -214,8 +214,9 @@ function updateRequestBody(rows, args) {
   var data = [dateHash];
 
   for(var name in args) {
-    if(nameLetterMapper.hasOwnProperty(name)) {
-      var userLetter = nameLetterMapper[name];
+    var username = name.toLowerCase();
+    if(nameLetterMapper.hasOwnProperty(username)) {
+      var userLetter = nameLetterMapper[username];
 
       var userDataHash = {
         majorDimension: "COLUMNS",
