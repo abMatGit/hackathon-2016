@@ -1,12 +1,15 @@
+'use strict';
+
 var googleAuth = require('google-auth-library');
 var google = require('googleapis');
 var readline = require('readline');
+var AWS = require('aws-sdk');
 var async = require('async');
-var fs = require('fs');
+var dynamo = new AWS.DynamoDB({ region: 'us-east-1' });
 var _= require('underscore');
 
-nameIndexMapper = require('../../../configs/user_mappings').nameIndexMapper;
-nameLetterMapper = require('../../../configs/user_mappings').nameLetterMapper;
+var nameIndexMapper = require('../../../configs/user_mappings').nameIndexMapper;
+var nameLetterMapper = require('../../../configs/user_mappings').nameLetterMapper;
 var SPREADSHEET_ID= require('../../../configs/google_credentials').spreadsheetId;
 var SCOPES = [  'https://www.googleapis.com/auth/spreadsheets' ];
 
@@ -16,14 +19,20 @@ var TOKEN_PATH = TOKEN_DIR + 'google-sheet-oauth-token.json';
 var doc = google.sheets('v4');
 
 function readCredentials(callback) {
-  fs.readFile('./configs/client_secret.json', function processClientSecrets(err, content) {
+  var params = {
+    TableName: 'oauth',
+    Key: { provider: { S: 'google-client' } },
+    AttributesToGet: [ 'provider', 'value' ]
+  }
+
+  dynamo.getItem(params, function processClientSecrets(err, data) {
     if (err) {
       console.log('Error loading client secret file: ' + err);
       return;
     }
     // Authorize a client with the loaded credentials, then call the
     // Drive API.
-    var credentials = JSON.parse(content);
+    var credentials = JSON.parse(data['Item']['value']['S']);
     callback(null, credentials);
   });
 };
@@ -39,11 +48,17 @@ function evaluateCredentials(credentials, callback) {
 };
 
 function setTokenIntoClient(oauth2Client, callback) {
-  fs.readFile(TOKEN_PATH, function(err, token) {
-    if (err) {
-      getNewToken(oauth2Client, callback);
-    } else {
-      oauth2Client.credentials = JSON.parse(token);
+  var params = {
+    TableName: 'oauth',
+    Key: { provider: { S: 'google-sheets' } },
+    AttributesToGet: [ 'provider', 'token' ]
+  }
+
+  dynamo.getItem(params, function(err, tokenData) {
+    if(err) { console.log('TOKEN IS UNAVAILABLE'); }
+    else {
+      var parsedToken = JSON.parse(tokenData['Item']['token']['S']);
+      oauth2Client.credentials = parsedToken;
       callback(null, oauth2Client);
     }
   });
@@ -193,7 +208,7 @@ function updateRequestBody(rows, args) {
     if(nameLetterMapper.hasOwnProperty(name)) {
       var userLetter = nameLetterMapper[name];
 
-      userDataHash = {
+      var userDataHash = {
         majorDimension: "COLUMNS",
         range: "Sheet1!" + userLetter + lastRowIndex,
         values: [[args[name]]]

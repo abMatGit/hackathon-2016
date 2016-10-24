@@ -4,7 +4,9 @@ var qs = require('querystring');
 var slackToken = require('./configs/slack_token').slackToken;
 var Autobot = require('./main/autobot');
 
-module.exports.slack = function(event, context, callback) {
+module.exports.slack = function(event, context, callback) {};
+
+module.exports.updateSheet = function(event, context, callback) {
 
   var statusCode, text;
   var body = event.body;
@@ -28,7 +30,7 @@ module.exports.slack = function(event, context, callback) {
       context.fail("Invalid request token");
       callback("Invalid request token");
   } else {
-    var autobot = new Autobot('slack');
+    var autobot = new Autobot('slack', 'google');
     autobot.receive(params.text).then(success, failure);
   }
 };
