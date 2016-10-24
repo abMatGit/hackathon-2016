@@ -2,26 +2,54 @@
 
 var Adapter = require('../adapters/adapter');
 
-function parsePlankTimes(input) {
-  var commandToken = input.trim().split(' ')[0];
+class Parser {
+  constructor(input) {
+    this.input = input;
+  }
 
-  var regexUsers = /(@?)([a-zA-Z]*)(:?)(\ )*(\d+)/gi
-  var regexUser = /(@?)([a-zA-Z]*)(:?)(\ )*(\d+)/i
+  parse() {
+    if(this.input) {
+      var command = this.fetchCommand();
 
-  var matchedUsers = input.match(regexUsers);
-  var usernameGroup = 2;
-  var timeGroup = 5;
-  var parsedArgs = {};
+      switch(command) {
+        case 'update':
+          return this.parseUpdate();
+        default:
+          return this.parseDefault();
+      }
+    }
+    else {
+      return { command: '', args: {} }
+    }
+  }
 
-  for(var i = 0; i < matchedUsers.length; i++) {
-    var matchedUser = matchedUsers[i].match(regexUser);
-    var username = matchedUser[usernameGroup];
-    var plankTime = matchedUser[timeGroup];
+  fetchCommand() {
+    return this.input.trim().split(' ')[0];
+  }
 
-    parsedArgs[username] = plankTime;
-  };
+  parseUpdate() {
+    var regexUsers = /(@?)([a-zA-Z]*)(:?)(\ )*(\d+)/gi
+    var regexUser = /(@?)([a-zA-Z]*)(:?)(\ )*(\d+)/i
 
-  return { command: commandToken, args: parsedArgs };
+    var matchedUsers = this.input.match(regexUsers);
+    var usernameGroup = 2;
+    var timeGroup = 5;
+    var parsedArgs = {};
+
+    for(var i = 0; i < matchedUsers.length; i++) {
+      var matchedUser = matchedUsers[i].match(regexUser);
+      var username = matchedUser[usernameGroup];
+      var plankTime = matchedUser[timeGroup];
+
+      parsedArgs[username] = plankTime;
+    };
+
+    return { command: 'update', args: parsedArgs };
+  }
+
+  parseDefault() {
+    return { command: this.fetchCommand(), args: this.input.split(' ').slice(1) }
+  }
 }
 
 class Cli extends Adapter {
@@ -32,13 +60,9 @@ class Cli extends Adapter {
            for more intelligent mapping.
   */
   parse(input) {
-    if(this.core.type() == 'google') { return parsePlankTimes(input); }
-    else if(this.core.type() == 'default') {
-      var tokens = input.trim().split(' ');
-      return { command: tokens[0], args: tokens.slice(1) }
-    }
+    var parser = new Parser(input)
+    return parser.parse();
   }
-
 
   /*
     TODO: Have an object whose responsibility it is to render
