@@ -30,7 +30,11 @@ class Core {
     var args         = inputTokens['args'];
 
     if(commandToken == '') { return doNothing; }
-    else {
+    else if(commandToken == 'greetings') {
+      var username = inputTokens['username'];
+      var cmd = access(this.commands, commandToken).bind(this);
+      return cmd(username);
+    } else {
       var cmd = access(this.commands, commandToken).bind(this);
       return cmd(args);
     }
@@ -39,6 +43,14 @@ class Core {
   type() {
     return access(this.commands, 'type').bind(this).call();
   }
+}
+
+// Returns a random integer between min (included) and max (excluded)
+// Using Math.round() will give you a non-uniform distribution!
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min;
 }
 
 var defaultCommands = {
@@ -76,6 +88,28 @@ var defaultCommands = {
 
 var googleCommands = {
   type: function() { return 'google';},
+
+  greetings: function(username) {
+    var motivations = [
+      " Ready to give a good plank today?",
+      " Good stuff today! Let's keep it going!",
+      " You're pretty cool, but can you plank?",
+      " Let's see what you can do today!"
+    ];
+    var emojis = [
+      " :sweat_drops:",
+      " :fuck_yes:",
+      " :punch:",
+      " :yoga:"
+    ];
+
+    var motivationIndex = getRandomInt(0,4);
+    var emojiIndex = getRandomInt(0,4);
+    return new Promise(function(resolve, reject) {
+      var returnString = "Hey @" + username + "!" + motivations[motivationIndex] + emojis[emojiIndex];
+      resolve(returnString);
+    });
+  },
 
   get: function(args) {
     return this.resource.get(args);

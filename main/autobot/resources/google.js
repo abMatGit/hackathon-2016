@@ -112,8 +112,7 @@ function updateRowsIntoSpreadsheet(oauth, rows, args, callback) {
   }, function(err, response) {
     if(err) { console.log(err); }
     else {
-      console.log(response);
-      callback(args);
+      callback(null, response);
     }
   });
 };
@@ -126,12 +125,22 @@ function updateRowsIntoSpreadsheet(oauth, rows, args, callback) {
 function isLatestDateCurrent(rows) {
   var latestSheetDate = rows[rows.length -1][0];
 
-  return getCurrentDate() == latestSheetDate;
+  if (getCurrentDate() == latestSheetDate) {
+    return true;
+  } else {
+    console.log("DATES DON'T MATCH!");
+    console.log("Date object: %s", new Date());
+    console.log("Current Date: %s", getCurrentDate());
+    console.log("latestSheetDate: %s", latestSheetDate);
+    return false;
+  }
 }
 
 function getCurrentDate() {
+  var offset = 420 * 60000; // This is used for PDT timezone
   var date = new Date();
-  return (date.getMonth() + 1) + "/" + date.getDate() + "/" + date.getFullYear();
+  var offsetDate = new Date(date.getTime() - offset);
+  return (offsetDate.getUTCMonth() + 1) + "/" + offsetDate.getUTCDate() + "/" + offsetDate.getUTCFullYear();
 }
 
 function getLastRowIndex(rows) {
@@ -270,7 +279,7 @@ class GoogleSheet {
         ],
         function finalCallback(err, data) {
           if (err) { reject(err); }
-          else { resolve(data) }
+          else { resolve(data); }
       });
     });
   }

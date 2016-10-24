@@ -1,41 +1,87 @@
 'use strict';
 
 var Adapter = require('../adapters/adapter');
+class Parser {
+  constructor(input) {
+    this.input = input.text;
+    this.username = input.user_name;
+  }
 
-function parsePlankTimes(input) {
-  var commandToken = input.trim().split(' ')[1];
+  parse() {
+    if(this.fetchGreeting() != null) {
+      return this.fetchGreeting();
+    } else if(this.input) {
+      var command = this.fetchCommand();
 
-  var regexUsers = /(@?)([a-zA-Z]*)(:?)(\ )*(\d+)/gi
-  var regexUser = /(@?)([a-zA-Z]*)(:?)(\ )*(\d+)/i
+      switch(command) {
+        case 'update':
+          return this.parseUpdate();
+        default:
+          return this.parseDefault();
+      }
+    } else {
+      return { command: '', args: {} }
+    }
+  }
 
-  var matchedUsers = input.match(regexUsers);
-  var usernameGroup = 2;
-  var timeGroup = 5;
-  var parsedArgs = {};
+  fetchGreeting() {
+    var firstWord = this.input.trim().split(' ')[0];
+    var greetingsRegex = /^(greetings|hello|hi|hey|sup)/g
 
-  for(var i = 0; i < matchedUsers.length; i++) {
-    var matchedUser = matchedUsers[i].match(regexUser);
-    var username = matchedUser[usernameGroup];
-    var plankTime = matchedUser[timeGroup];
+    if(firstWord.match(greetingsRegex) != null) {
+      return { command: 'greetings', username: this.username, args: {} }
+    }
 
-    parsedArgs[username] = plankTime;
-  };
+    return null;
+  }
 
-  return { command: commandToken, args: parsedArgs };
+  fetchCommand() {
+    return this.input.trim().split(' ')[1];
+  }
+
+  parseUpdate() {
+    var regexUsers = /(@?)([a-zA-Z]*)(:?)(\ )*(\d+)/gi
+    var regexUser = /(@?)([a-zA-Z]*)(:?)(\ )*(\d+)/i
+
+    var matchedUsers = this.input.match(regexUsers);
+    var usernameGroup = 2;
+    var timeGroup = 5;
+    var parsedArgs = {};
+
+    for(var i = 0; i < matchedUsers.length; i++) {
+      var matchedUser = matchedUsers[i].match(regexUser);
+      var username = matchedUser[usernameGroup];
+      var plankTime = matchedUser[timeGroup];
+
+      parsedArgs[username] = plankTime;
+    };
+
+    return { command: 'update', args: parsedArgs };
+  }
+
+  parseDefault() {
+    return { command: this.fetchCommand(), args: this.input.split(' ').slice(2) }
+  }
 }
 
 class Slack extends Adapter {
   parse(input) {
-    if(this.core.type() == 'google') { return parsePlankTimes(input); }
-    else if(this.core.type() == 'default') {
-      var tokens = input.trim().split(' ');
-      return { command: tokens[1], args: tokens.slice(2) }
-    }
+    var parser = new Parser(input);
+    return parser.parse();
   }
 
   render(data) {
     //responseData = JSON.stringify(data);
-    return { text: 'SUCCESS!' };
+    //console.log(data);
+    if(data['totalUpdatedColumns']) {
+      if(data['totalUpdatedColumns'] == 2) {
+        return { text: 'Successfully updated 1 record!' }
+      } else  {
+        return { text: 'Sucessfully updated ' + (data['totalUpdatedColumns'] - 1) + ' records!' };
+      }
+    } else {
+      return { text: data }
+    }
   }
 }
 
