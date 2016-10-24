@@ -31,6 +31,6 @@ module.exports.updateSheet = function(event, context, callback) {
       callback("Invalid request token");
   } else {
     var autobot = new Autobot('slack', 'google');
-    autobot.receive(params.text).then(success, failure);
+    autobot.receive(params).then(success, failure);
   }
 };
