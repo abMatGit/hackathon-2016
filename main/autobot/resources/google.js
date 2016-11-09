@@ -148,6 +148,15 @@ function getLastRowIndex(rows) {
   return rows.length + 2;
 }
 
+function getRandomColour() {
+  var letters = '0123456789ABCDEF';
+  var color = '';
+  for (var i = 0; i < 6; i++ ) {
+      color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
 /**
  * Fetch token and then set it to disk.
  *
@@ -159,22 +168,6 @@ function getNewToken(oauth2Client, callback) {
     scope: SCOPES
   });
   console.log('Authorize this app by visiting this url: ', authUrl);
-  var rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-  rl.question('Enter the code from that page here: ', function(code) {
-    rl.close();
-    oauth2Client.getToken(code, function(err, token) {
-      if (err) {
-        console.log('Error while trying to retrieve access token', err);
-        return;
-      }
-      oauth2Client.credentials = token;
-      storeToken(token);
-      callback(null, oauth2Client);
-    });
-  });
 }
 
 /**
@@ -193,7 +186,6 @@ function storeToken(token) {
   fs.writeFile(TOKEN_PATH, JSON.stringify(token));
   console.log('Token stored to ' + TOKEN_PATH);
 }
-
 
 /*
   ARGs should come in the format:
@@ -286,4 +278,81 @@ class GoogleSheet {
   }
 }
 
-module.exports = new GoogleSheet();
+//  ************************ GOOGLE CHART *******************************
+/*
+  This class should be initialized with chart data
+  {
+    dude: [array of values],
+    dudester: [array of values],
+    dudette: [array of values]
+  }
+*/
+class GoogleChart {
+  constructor(chartData) {
+    this.chartData = chartData;
+  }
+
+  generateChartColours() {
+    var colours = [];
+    for(var key in this.chartData) {
+      if(this.chartData.hasOwnProperty(key)) {
+        var colour = getRandomColour();
+        colours.push(colour);
+      }
+    }
+
+    var chartColoursString = "chco=" + colours.join(',');
+    return chartColoursString;
+  }
+
+  generateChartData() {
+    var dataStringSet = [];
+
+    // iterate over each set of data
+    for(var key in this.chartData) {
+      if(this.chartData.hasOwnProperty(key)) {
+        dataStringSet.push(this.chartData[key].join(','));
+      }
+    }
+    return "chd=t:" + dataStringSet.join('%7C');
+  }
+
+  generateChartLabels() {
+    var chartLabels = [];
+
+    for(var key in this.chartData) {
+      if(this.chartData.hasOwnProperty(key)) {
+        chartLabels.push(key);
+      }
+    }
+
+    return "chdl=" + chartLabels.join('%7C');
+  }
+
+  generateChartSize() {
+    return "chs=700x400";
+  }
+
+  generateChartType() {
+    return "cht=ls"
+  }
+
+  generateChartURL(){
+    var chartArguments = [
+      this.generateChartColours(),
+      this.generateChartData(),
+      this.generateChartLabels(),
+      this.generateChartSize(),
+      this.generateChartType()
+    ]
+
+    return "https://chart.apis.google.com/chart?" + chartArguments.join('&');
+  }
+}
+
+class GoogleURLShortener {
+}
+
+var a = { dude: [10 ,20, 30], dudester: [20,40,60] }
+
+module.exports = new GoogleChart(a);
