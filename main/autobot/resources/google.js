@@ -2,7 +2,6 @@
 
 var googleAuth = require('google-auth-library');
 var google = require('googleapis');
-var readline = require('readline');
 var AWS = require('aws-sdk');
 var async = require('async');
 var dynamo = new AWS.DynamoDB({ region: 'us-east-1' });
@@ -12,9 +11,6 @@ var nameIndexMapper = require('../../../configs/user_mappings').nameIndexMapper;
 var nameLetterMapper = require('../../../configs/user_mappings').nameLetterMapper;
 var SPREADSHEET_ID= require('../../../configs/google_credentials').spreadsheetId;
 var SCOPES = [  'https://www.googleapis.com/auth/spreadsheets' ];
-
-var TOKEN_DIR = '../../../configs/';
-var TOKEN_PATH = TOKEN_DIR + 'google-sheet-oauth-token.json';
 
 var doc = google.sheets('v4');
 
@@ -176,15 +172,6 @@ function getNewToken(oauth2Client, callback) {
  * @param {Object} token The token to store to disk.
  */
 function storeToken(token) {
-  try {
-    fs.mkdirSync(TOKEN_DIR);
-  } catch (err) {
-    if (err.code != 'EEXIST') {
-      throw err;
-    }
-  }
-  fs.writeFile(TOKEN_PATH, JSON.stringify(token));
-  console.log('Token stored to ' + TOKEN_PATH);
 }
 
 /*
