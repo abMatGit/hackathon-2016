@@ -2,6 +2,8 @@
 
 var googleAuth = require('google-auth-library');
 var google = require('googleapis');
+var GoogleUrl = require('google-url');
+
 var AWS = require('aws-sdk');
 var async = require('async');
 var dynamo = new AWS.DynamoDB({ region: 'us-east-1' });
@@ -62,6 +64,27 @@ function setTokenIntoClient(oauth2Client, callback) {
     }
   });
 };
+
+function initializeGoogleUrlClient(callback) {
+  var params = {
+    TableName: 'oauth',
+    Key: { provider: { S: 'google-url' } },
+    AttributesToGet: [ 'provider', 'key' ]
+  }
+
+  dynamo.getItem(params, function(err, apiData) {
+    if(err) { console.log('KEY IS UNAVAILABLE'); }
+    else {
+      var parsedKey = JSON.parse(apiData['Item']['key']['S']);
+      var googleUrlClient = new GoogleUrl(parsedKey);
+      callback(null, googleUrlClient);
+    }
+  });
+};
+
+// --------------------------------------------------------------------------------
+
+// ********************* GOOGLE SPREADSHEET AUTH REQUESTS *************************
 
 function getInfoFromSpreadsheet(oauth, name, callback) {
   doc.spreadsheets.values.get({
@@ -159,6 +182,13 @@ function generateChartURL(parsedRows, callback) {
     console.log(err);
   }
 };
+
+function shortenURL(originalURL, callback) {
+  initializeGoogleUrlClient(function(err, googleUrlClient) {
+    googleUrlClient.shorten(originalURL, callback);
+  });
+};
+
 // *************************** HELPER FUNCTIONS *********************************
 
 /**
