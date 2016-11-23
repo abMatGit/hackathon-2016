@@ -124,39 +124,6 @@ function getRowsFromSpreadsheet(oauth, callback) {
   });
 };
 
-function parseChartData(data, callback) {
-  var labelRow = data[0];
-  var parsedChartData = {};
-  var maxTime = 0;
-
-  for(var userIndex =1; userIndex < labelRow.length; userIndex++) {
-    var parsedUserData = parseChartDataForUser(userIndex, data, true);
-    var userName = data[0][userIndex];
-
-    maxTime = Math.max(maxTime, parsedUserData.maxTime);
-    parsedChartData[userName] = parsedUserData[userName];
-  }
-  parsedChartData.maxTime = maxTime;
-
-  callback(null, parsedChartData);
-}
-
-function parseChartDataWithFilters(data, filters, callback) {
-  var labelRow = data[0];
-  var parsedChartData = {};
-  var maxTime = 0;
-
-  for(var i in filters) {
-    var userIndex = filters[i];
-    var parsedUserData = parseChartDataForUser(userIndex, data, true);
-    var userName = data[0][userIndex];
-
-    maxTime = Math.max(maxTime, parsedUserData.maxTime);
-    parsedChartData[userName] = parsedUserData[userName];
-  }
-  parsedChartData.maxTime = maxTime;
-  callback(null, parsedChartData);
-}
 
 function updateRowsIntoSpreadsheet(oauth, rows, args, callback) {
   var requestBody = updateRequestBody(rows, args);
@@ -173,15 +140,6 @@ function updateRowsIntoSpreadsheet(oauth, rows, args, callback) {
   });
 };
 
-function generateChartURL(parsedRows, callback) {
-  var googleChart = new GoogleChart(parsedRows);
-  try {
-    var chartURL = googleChart.generateEncodedChartURL();
-    callback(null, chartURL);
-  } catch (err){
-    console.log(err);
-  }
-};
 
 function shortenURL(originalURL, callback) {
   initializeGoogleUrlClient(function(err, googleUrlClient) {
@@ -220,6 +178,9 @@ function getLastRowIndex(rows) {
   return rows.length + 2;
 }
 
+/**
+  * Outputs a random 6 char hex representation of a colour
+**/
 function getRandomColour() {
   var letters = '0123456789ABCDEF';
   var color = '';
@@ -229,6 +190,19 @@ function getRandomColour() {
   return color;
 }
 
+
+/**
+  * This will generate a particular set of data points for a specific user
+  * If the connected flag is set to true then it will set all 'undefined' values to the previously seen value
+  * (which are data points missed -> person skipped that plank day)
+  *
+  * Input:
+  *       1) userIndex: 1
+  *       2) data: [ ['Date', 'mexTaco', 'pierogi'] ['1/1/2016', 10, 20], ['1/2/2016', 30, 20]]
+  *       3) connected: false
+  * Output:
+  *       { maxTime: 30, mexTaco: [10, 30] }
+**/
 function parseChartDataForUser(userIndex, data, connected) {
   var time, userData = {}, timeArray = [];
   var user = data[0][userIndex];
@@ -251,6 +225,57 @@ function parseChartDataForUser(userIndex, data, connected) {
   userData['maxTime'] = maxTime;
 
   return userData;
+}
+
+/**
+  * Will accumulate each person's data and parse it into a format that the GoogleChart object can easily render with
+  * Input:
+  *       1) data: [ ['Date', 'mexTaco', 'pierogi'] ['1/1/2016', 10, 20], ['1/2/2016', 30, 20]]
+  *       2) callback
+  * Output:
+  *       { maxTime: 30, mexTaco: [10, 30], pierogi: [20, 20] } -> into callback
+**/
+function parseChartData(data, callback) {
+  var labelRow = data[0];
+  var parsedChartData = {};
+  var maxTime = 0;
+
+  for(var userIndex =1; userIndex < labelRow.length; userIndex++) {
+    var parsedUserData = parseChartDataForUser(userIndex, data, true);
+    var userName = data[0][userIndex];
+
+    maxTime = Math.max(maxTime, parsedUserData.maxTime);
+    parsedChartData[userName] = parsedUserData[userName];
+  }
+  parsedChartData.maxTime = maxTime;
+
+  callback(null, parsedChartData);
+}
+
+/**
+  * Will accumulate each person's data and parse it into a format that the GoogleChart object can easily render with
+  * Input:
+  *       1) data: [ ['Date', 'mexTaco', 'pierogi', 'hotSauce'] ['1/1/2016', 10, 20, 30], ['1/2/2016', 30, 20, 40]]
+  *       2) filters: ['mexTaco', 'hotSauce']
+  *       3) callback
+  * Output:
+  *       { maxTime: 40, mexTaco: [10, 30], hotSauce: [30, 40] } -> into callback
+**/
+function parseChartDataWithFilters(data, filters, callback) {
+  var labelRow = data[0];
+  var parsedChartData = {};
+  var maxTime = 0;
+
+  for(var i in filters) {
+    var userIndex = filters[i];
+    var parsedUserData = parseChartDataForUser(userIndex, data, true);
+    var userName = data[0][userIndex];
+
+    maxTime = Math.max(maxTime, parsedUserData.maxTime);
+    parsedChartData[userName] = parsedUserData[userName];
+  }
+  parsedChartData.maxTime = maxTime;
+  callback(null, parsedChartData);
 }
 
 /**
@@ -282,6 +307,7 @@ function storeToken(token) {
     womang: num
   }
 */
+
 function updateRequestBody(rows, args) {
   var lastRowIndex = getLastRowIndex(rows);
   var dateHash = {
@@ -334,6 +360,23 @@ function extractUserIndexes(rows, filters) {
 
   return extractedUserIndexes;
 }
+
+
+/**
+  * Generates the unshortened url-parameterized chart link from the parsed data
+  * Input: 1) { maxTime: 30, dude: [10, 20, 30], whiteMang: [10, 20, 30] }
+  *        2)  callback
+  * Output: { 'http://go.og.l/1231297#whatthefucklinkisthis' } -> into callback
+**/
+function generateChartURL(parsedRows, callback) {
+  var googleChart = new GoogleChart(parsedRows);
+  try {
+    var chartURL = googleChart.generateEncodedChartURL();
+    callback(null, chartURL);
+  } catch (err){
+    console.log(err);
+  }
+};
 
 // ****************************************************************************
 
