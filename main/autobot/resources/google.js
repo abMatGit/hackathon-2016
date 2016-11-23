@@ -14,6 +14,9 @@ var SCOPES = [  'https://www.googleapis.com/auth/spreadsheets' ];
 
 var doc = google.sheets('v4');
 
+// --------------------------- DYNAMO CREDENTIAL READS ----------------------------- //
+//
+
 function readCredentials(callback) {
   var params = {
     TableName: 'oauth',
@@ -64,7 +67,7 @@ function getInfoFromSpreadsheet(oauth, name, callback) {
   doc.spreadsheets.values.get({
     auth: oauth,
     spreadsheetId: SPREADSHEET_ID,
-    range: 'Sheet1!A2:I',
+    range: 'Sheet1!A1:I',
   }, function(err, response) {
     if(err) {
       console.log(err)
@@ -72,8 +75,8 @@ function getInfoFromSpreadsheet(oauth, name, callback) {
       var rows = response.values;
       if (rows.length == 0) { console.log('NO DATA FOUND!'); }
       else {
-        console.log('Date, %s:', name);
-        var userIndex = nameIndexMapper[name];
+        var mapperName = name.toLowerCase();
+        var userIndex = nameIndexMapper[mapperName];
         for(var i = 0; i < rows.length; i++) {
           var row = rows[i];
           console.log('%s, %s', row[0], row[userIndex]);
@@ -87,7 +90,7 @@ function getRowsFromSpreadsheet(oauth, callback) {
   doc.spreadsheets.values.get({
     auth: oauth,
     spreadsheetId: SPREADSHEET_ID,
-    range: 'Sheet1!A2:R',
+    range: 'Sheet1!A1:R',
   }, function(err, response) {
     if(err) { console.log(err) }
     else {
@@ -97,6 +100,40 @@ function getRowsFromSpreadsheet(oauth, callback) {
     }
   });
 };
+
+function parseChartData(data, callback) {
+  var labelRow = data[0];
+  var parsedChartData = {};
+  var maxTime = 0;
+
+  for(var userIndex =1; userIndex < labelRow.length; userIndex++) {
+    var parsedUserData = parseChartDataForUser(userIndex, data, true);
+    var userName = data[0][userIndex];
+
+    maxTime = Math.max(maxTime, parsedUserData.maxTime);
+    parsedChartData[userName] = parsedUserData[userName];
+  }
+  parsedChartData.maxTime = maxTime;
+
+  callback(null, parsedChartData);
+}
+
+function parseChartDataWithFilters(data, filters, callback) {
+  var labelRow = data[0];
+  var parsedChartData = {};
+  var maxTime = 0;
+
+  for(var i in filters) {
+    var userIndex = filters[i];
+    var parsedUserData = parseChartDataForUser(userIndex, data, true);
+    var userName = data[0][userIndex];
+
+    maxTime = Math.max(maxTime, parsedUserData.maxTime);
+    parsedChartData[userName] = parsedUserData[userName];
+  }
+  parsedChartData.maxTime = maxTime;
+  callback(null, parsedChartData);
+}
 
 function updateRowsIntoSpreadsheet(oauth, rows, args, callback) {
   var requestBody = updateRequestBody(rows, args);
@@ -113,6 +150,15 @@ function updateRowsIntoSpreadsheet(oauth, rows, args, callback) {
   });
 };
 
+function generateChartURL(parsedRows, callback) {
+  var googleChart = new GoogleChart(parsedRows);
+  try {
+    var chartURL = googleChart.generateEncodedChartURL();
+    callback(null, chartURL);
+  } catch (err){
+    console.log(err);
+  }
+};
 // *************************** HELPER FUNCTIONS *********************************
 
 /**
@@ -151,6 +197,30 @@ function getRandomColour() {
       color += letters[Math.floor(Math.random() * 16)];
   }
   return color;
+}
+
+function parseChartDataForUser(userIndex, data, connected) {
+  var time, userData = {}, timeArray = [];
+  var user = data[0][userIndex];
+  var lastKnownTime = undefined;
+  var maxTime = 0;
+
+  for (var i =1; i < data.length; i++) {
+    time = data[i][userIndex];
+
+    // Sanitize the time if its not defined and we want to connect missing days
+    if(!time && lastKnownTime && connected) { time = lastKnownTime }
+    else if(time) {
+      maxTime = Math.max(maxTime, time);
+      lastKnownTime = time;
+    }
+
+    timeArray.push(time);
+  }
+  userData[user] = timeArray;
+  userData['maxTime'] = maxTime;
+
+  return userData;
 }
 
 /**
@@ -209,13 +279,39 @@ function updateRequestBody(rows, args) {
   return { valueInputOption: "USER_ENTERED", data: data };
 }
 
+/*
+* This should parse out the raw data and return the array of indexes corresponding to each filter name
+* Input: ['not_found', 'dude_found', 'your_mom_found']
+* Output:
+*         {
+*           not_found: undefined,
+*           dude_found: 1,
+*           your_mom_found: 13
+*         }
+*/
+
+function extractUserIndexes(rows, filters) {
+  var userRows = rows[0];
+  var extractedUserIndexes = [];
+
+  for(var i = 0; i < userRows.length; i++) {
+    var name = userRows[i].toLowerCase();
+
+    if(_.contains(filters, name)) {
+      extractedUserIndexes.push(i);
+    }
+  }
+
+  return extractedUserIndexes;
+}
+
 // ****************************************************************************
 
 class GoogleSheet {
   constructor() { }
 
   get(args) {
-    var name = args[0];
+    var name = args[0].trim();
 
     return new Promise(function(resolve, reject) {
       async.waterfall([
@@ -238,6 +334,45 @@ class GoogleSheet {
       });
     });
   }
+
+  chart(users) {
+    return new Promise(function(resolve, reject) {
+      async.waterfall([
+          function(callback){
+            readCredentials(callback);
+          },
+          function(credentials, callback) {
+            evaluateCredentials(credentials, callback);
+          },
+          function(oauth2Client, callback) {
+            setTokenIntoClient(oauth2Client, callback);
+          },
+          function(oauth, callback) {
+            getRowsFromSpreadsheet(oauth, callback);
+          },
+          function(oauth, rows, callback) {
+            var userFilters = extractUserIndexes(rows, users);
+
+            if(userFilters.length > 0) {
+              parseChartDataWithFilters(rows, userFilters, callback);
+            } else {
+              parseChartData(rows, callback);
+            }
+          },
+          function(parsedRows, callback) {
+            generateChartURL(parsedRows, callback);
+          },
+          function(googleChartURL, callback) {
+            shortenURL(googleChartURL, callback);
+          }
+        ],
+        function finalCallback(err, url) {
+          if (err) { console.log(err); reject(err); }
+          else { console.log(url); resolve(url); }
+      });
+    });
+  }
+
   update(args) {
     return new Promise(function(resolve, reject) {
       async.waterfall([
@@ -269,14 +404,19 @@ class GoogleSheet {
 /*
   This class should be initialized with chart data
   {
+    maxTime: maximum value over all user times
     dude: [array of values],
     dudester: [array of values],
     dudette: [array of values]
-  }
+  },
+  ['dude', 'dudester', 'dudette']
 */
 class GoogleChart {
-  constructor(chartData) {
+  constructor(chartData, filters) {
     this.chartData = chartData;
+    this.maxTime = chartData.maxTime;
+    this.filters = filters;
+    delete chartData.maxTime;
   }
 
   generateChartColours() {
@@ -292,7 +432,29 @@ class GoogleChart {
     return chartColoursString;
   }
 
-  generateChartData() {
+  generateInterpolatedChartData() {
+    var dataStringSet = [];
+
+
+  }
+
+  generateEncodedChartData() {
+    var dataStringSet = [];
+
+    // iterate over each set of data
+    for(var key in this.chartData) {
+      if(this.chartData.hasOwnProperty(key)) {
+        var encodedDataString = this.simpleEncode(this.chartData[key], this.maxTime);
+        dataStringSet.push(encodedDataString);
+      }
+    }
+    var chartData = "chd=s:" + dataStringSet.join(',');
+    var chartAxisRange = "chxr=0,0," + this.maxTime;
+
+    return [chartData, chartAxisRange].join('&');
+  }
+
+  generatePlainChartData() {
     var dataStringSet = [];
 
     // iterate over each set of data
@@ -301,9 +463,11 @@ class GoogleChart {
         dataStringSet.push(this.chartData[key].join(','));
       }
     }
-    return "chd=t:" + dataStringSet.join('%7C');
-  }
+    var chartData = "chd=t:" + dataStringSet.join('%7C');
+    var chartAxisRange = "chxr=0,0," + (this.maxTime * 1.2);
 
+    return [chartData, chartAxisRange].join('&');
+  }
   generateChartLabels() {
     var chartLabels = [];
 
@@ -321,13 +485,15 @@ class GoogleChart {
   }
 
   generateChartType() {
-    return "cht=ls"
+    var chartType = "cht=ls"; // Chart type is a line chart
+    var chartAxis = "chxt=y"; // Chart axis is only the y axis
+    return [chartType, chartAxis].join('&');
   }
 
   generateChartURL(){
     var chartArguments = [
       this.generateChartColours(),
-      this.generateChartData(),
+      this.generatePlainChartData(),
       this.generateChartLabels(),
       this.generateChartSize(),
       this.generateChartType()
@@ -335,11 +501,40 @@ class GoogleChart {
 
     return "https://chart.apis.google.com/chart?" + chartArguments.join('&');
   }
+
+  generateEncodedChartURL(){
+    var chartArguments = [
+      this.generateChartColours(),
+      this.generateEncodedChartData(),
+      this.generateChartLabels(),
+      this.generateChartSize(),
+      this.generateChartType()
+    ]
+
+    return "https://chart.apis.google.com/chart?" + chartArguments.join('&');
+  }
+
+  simpleEncode(valueArray,maxValue) {
+    var encodedChars = [];
+    var simpleEncoding = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var currentValue, encodedChar;
+
+    for (var i = 0; i < valueArray.length; i++) {
+      currentValue = valueArray[i];
+
+      if (currentValue && currentValue > 0) {
+        encodedChar = simpleEncoding.charAt(Math.round((simpleEncoding.length-1) * currentValue / maxValue));
+        encodedChars.push(encodedChar);
+      } else {
+        encodedChars.push('_');
+      }
+    }
+    return encodedChars.join('');
+  }
 }
 
-class GoogleURLShortener {
-}
+var a = { maxTime: 60, dude: [10 ,20, 30], dudester: [20,40,60] }
 
-var a = { dude: [10 ,20, 30], dudester: [20,40,60] }
+//module.exports = new GoogleChart(a);
+module.exports = new GoogleSheet();
 
-module.exports = new GoogleChart(a);

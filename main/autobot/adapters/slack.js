@@ -3,8 +3,12 @@
 var Adapter = require('../adapters/adapter');
 class Parser {
   constructor(input) {
-    this.input = input.text;
-    this.username = input.user_name;
+    if(input.text) {
+      this.input = input.text;
+      this.username = input.user_name;
+    } else {
+      this.input = input;
+    }
   }
 
   parse() {
@@ -16,6 +20,8 @@ class Parser {
       switch(command) {
         case 'update':
           return this.parseUpdate();
+        case 'chart':
+          return this.parseChart();
         default:
           return this.parseDefault();
       }
@@ -57,6 +63,13 @@ class Parser {
     };
 
     return { command: 'update', args: parsedArgs };
+  }
+
+  parseChart() {
+    var regexUsers = /[a-zA-z]+/gi
+    var matchedUsers = this.input.match(regexUsers);
+
+    return { command: 'chart', args: matchedUsers };
   }
 
   parseDefault() {

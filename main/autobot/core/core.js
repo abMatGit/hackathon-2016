@@ -115,6 +115,10 @@ var googleCommands = {
     return this.resource.get(args);
   },
 
+  chart: function(args) {
+    return this.resource.chart(args);
+  },
+
   update: function(args) {
     return this.resource.update(args);
   }
