@@ -1,7 +1,7 @@
 'use strict';
 
 var jiraResource = require('../resources/jira');
-var googleResource = require('../resources/google');
+var googleResource = require('../resources/google/google');
 var access = require('../../lib/resource_accessor').access;
 
 var doNothing = new Promise(function(resolve, reject) { resolve(); });
@@ -120,7 +120,7 @@ var googleCommands = {
   },
 
   interpolate: function(args) {
-    return this.resource.interpolateChart(args);
+    return this.resource.interpolate(args);
   },
 
   update: function(args) {
