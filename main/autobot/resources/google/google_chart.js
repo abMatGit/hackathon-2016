@@ -10,6 +10,8 @@
     }
   }
 */
+'use strict';
+
 class GoogleChart {
   constructor(data) {
     this.users = data.users;

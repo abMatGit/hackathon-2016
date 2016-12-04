@@ -1,3 +1,5 @@
+'use strict';
+
 var _= require('underscore');
 var spline = require('cubic-spline');
 

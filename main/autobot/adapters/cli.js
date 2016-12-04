@@ -5,6 +5,8 @@ var Adapter = require('../adapters/adapter');
 class Parser {
   constructor(input) {
     this.input = input;
+    this.commandIndex = 0;
+    this.argsIndex = 1;
   }
 
   parse() {
@@ -28,7 +30,7 @@ class Parser {
   }
 
   fetchCommand() {
-    return this.input.trim().split(' ')[0];
+    return this.input.trim().split(' ')[this.commandIndex];
   }
 
   parseUpdate() {
@@ -60,13 +62,15 @@ class Parser {
 
   parseInterpolate() {
     var regexUsers = /([a-zA-z]+)/gi
-    var matchedUsers = this.input.match(regexUsers).slice(1);
+    var matchedUsers = this.input.match(regexUsers).slice(this.argsIndex);
 
     return { command: 'interpolate', args: matchedUsers };
   }
 
   parseDefault() {
-    return { command: this.fetchCommand(), args: this.input.split(' ').slice(1) }
+    var command = this.fetchCommand();
+    var args = this.input.split(' ').slice(this.argsIndex);
+    return { command: command, args: args }
   }
 }
 

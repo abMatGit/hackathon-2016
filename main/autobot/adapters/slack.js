@@ -9,6 +9,8 @@ class Parser {
     } else {
       this.input = input;
     }
+    this.commandIndex = 1;
+    this.argsIndex = 2;
   }
 
   parse() {
@@ -44,7 +46,7 @@ class Parser {
   }
 
   fetchCommand() {
-    return this.input.trim().split(' ')[1];
+    return this.input.trim().split(' ')[this.commandIndex];
   }
 
   parseUpdate() {
@@ -69,20 +71,22 @@ class Parser {
 
   parseChart() {
     var regexUsers = /[a-zA-z]+/gi
-    var matchedUsers = this.input.match(regexUsers);
+    var matchedUsers = this.input.match(regexUsers).slice(this.argsIndex);
 
     return { command: 'chart', args: matchedUsers };
   }
 
   parseInterpolate() {
     var regexUsers = /([a-zA-z]+)/gi
-    var matchedUsers = this.input.match(regexUsers).slice(1);
+    var matchedUsers = this.input.match(regexUsers).slice(this.argsIndex);
 
     return { command: 'interpolate', args: matchedUsers };
   }
 
   parseDefault() {
-    return { command: this.fetchCommand(), args: this.input.split(' ').slice(2) }
+    var command = this.fetchCommand();
+    var args = this.input.split(' ').slice(this.argsIndex);
+    return { command: command, args: args }
   }
 }
 
