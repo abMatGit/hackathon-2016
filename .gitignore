@@ -1,5 +1,6 @@
 #Credentials
-*/*_credentials.js
+configs/*.js
+configs/*.json
 
 # Logs
 logs

@@ -43,33 +43,48 @@ provider:
 #  artifact: my-service-code.zip
 
 functions:
-  plank:
+  jira:
     handler: handler.slack
     events:
       - http:
           path: slack
           method: post
+  plank:
+    handler: handler.updateSheet
+    events:
+      - http:
+          path: plank/update
+          method: post
 
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
-#    events:
-#      - http:
-#          path: users/create
-#          method: get
-#      - s3: ${env:BUCKET}
-#      - schedule: rate(10 minutes)
-#      - sns: greeter-topic
-#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
-
-# you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+resources:
+  Resources:
+    DynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: oauth
+        AttributeDefinitions:
+          - AttributeName: provider
+            AttributeType: S
+        KeySchema:
+          - AttributeName: provider
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+    DynamoDBIamPolicy:
+      Type: AWS::IAM::Policy
+      DependsOn: DynamoDbTable
+      Properties:
+        PolicyName: lambda-dynamodb
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:ListTables
+              #Resource: arn:aws:dynamodb:*:*:table/oauth
+              Resource: "*"
+        Roles:
+          - Ref: IamRoleLambdaExecution

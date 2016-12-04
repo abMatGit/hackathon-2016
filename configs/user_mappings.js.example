@@ -1,0 +1,15 @@
+module.exports.nameIndexMapper = {
+  mang: 1,
+  idiota: 2,
+  pendejo: 3,
+  womang: 4,
+  chola: 5
+}
+
+module.exports.nameLetterMapper = {
+  mang: "A",
+  idiota: "B",
+  pendejo: "C",
+  womang: "D",
+  chola: "E"
+}

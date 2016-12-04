@@ -4,6 +4,7 @@ var Autobot = require('../main/autobot');
 describe('Autobot', function () {
     context('using slack adapter', function () {
         var autobot = new Autobot('slack');
+        var input = { text: 'autobot echo wtf', user_name: 'mang' }
 
         var failTest = function(data) { assert.equal(1,2); }
         var assertEcho = function(data, error) {
@@ -11,7 +12,7 @@ describe('Autobot', function () {
         }
 
         it('uses slack adapter and the echo default command', function () {
-            return autobot.receive('autobot echo wtf', assertEcho);
+            return autobot.receive(input, assertEcho);
         });
     });
 

@@ -3,11 +3,14 @@
 var Handler = require('./autobot/handler');
 var access = require('./lib/resource_accessor').access;
 var Adapters = require('./autobot/adapters');
+var googleCore = require('./autobot/core/core').google;
+var defaultCore = require('./autobot/core/core').default;
 
 class Autobot {
-  constructor(adapter) {
+  constructor(adapter, coreType) {
     var adapterClass = access(Adapters, adapter);
-    this.adapter = new adapterClass();
+    if(coreType == 'google') { this.adapter = new adapterClass(googleCore); }
+    else { this.adapter = new adapterClass(defaultCore); }
   }
 
   receive(input) {

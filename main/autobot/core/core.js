@@ -1,7 +1,10 @@
 'use strict';
 
 var jiraResource = require('../resources/jira');
+var googleResource = require('../resources/google/google');
 var access = require('../../lib/resource_accessor').access;
+
+var doNothing = new Promise(function(resolve, reject) { resolve(); });
 
 class Core {
   constructor(commands, resource) {
@@ -26,13 +29,32 @@ class Core {
     var commandToken = inputTokens['command'];
     var args         = inputTokens['args'];
 
-    var cmd = access(this.commands, commandToken).bind(this);
+    if(commandToken == '') { return doNothing; }
+    else if(commandToken == 'greetings') {
+      var username = inputTokens['username'];
+      var cmd = access(this.commands, commandToken).bind(this);
+      return cmd(username);
+    } else {
+      var cmd = access(this.commands, commandToken).bind(this);
+      return cmd(args);
+    }
+  }
 
-    return cmd(args);
+  type() {
+    return access(this.commands, 'type').bind(this).call();
   }
 }
 
-var commands = {
+// Returns a random integer between min (included) and max (excluded)
+// Using Math.round() will give you a non-uniform distribution!
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+var defaultCommands = {
+  type: function() { return 'default'; },
   /*
     A simple echo call.
 
@@ -64,5 +86,48 @@ var commands = {
   }
 }
 
+var googleCommands = {
+  type: function() { return 'google';},
+
+  greetings: function(username) {
+    var motivations = [
+      " Ready to give a good plank today?",
+      " Good stuff today! Let's keep it going!",
+      " You're pretty cool, but can you plank?",
+      " Let's see what you can do today!"
+    ];
+    var emojis = [
+      " :sweat_drops:",
+      " :fuck_yes:",
+      " :punch:",
+      " :yoga:"
+    ];
+
+    var motivationIndex = getRandomInt(0,4);
+    var emojiIndex = getRandomInt(0,4);
+    return new Promise(function(resolve, reject) {
+      var returnString = "Hey @" + username + "!" + motivations[motivationIndex] + emojis[emojiIndex];
+      resolve(returnString);
+    });
+  },
+
+  get: function(args) {
+    return this.resource.get(args);
+  },
+
+  chart: function(args) {
+    return this.resource.chart(args);
+  },
+
+  interpolate: function(args) {
+    return this.resource.interpolate(args);
+  },
+
+  update: function(args) {
+    return this.resource.update(args);
+  }
+}
+
 module.exports.Core = Core;
-module.exports.default = new Core(commands, jiraResource);
+module.exports.default = new Core(defaultCommands, jiraResource);
+module.exports.google  = new Core(googleCommands, googleResource);
