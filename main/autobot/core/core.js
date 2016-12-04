@@ -119,6 +119,10 @@ var googleCommands = {
     return this.resource.chart(args);
   },
 
+  interpolate: function(args) {
+    return this.resource.interpolateChart(args);
+  },
+
   update: function(args) {
     return this.resource.update(args);
   }

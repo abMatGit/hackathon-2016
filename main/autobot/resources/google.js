@@ -8,6 +8,7 @@ var AWS = require('aws-sdk');
 var async = require('async');
 var dynamo = new AWS.DynamoDB({ region: 'us-east-1' });
 var _= require('underscore');
+var spline = require('cubic-spline');
 
 var nameIndexMapper = require('../../../configs/user_mappings').nameIndexMapper;
 var nameLetterMapper = require('../../../configs/user_mappings').nameLetterMapper;
@@ -190,7 +191,6 @@ function getRandomColour() {
   return color;
 }
 
-
 /**
   * This will generate a particular set of data points for a specific user
   * If the connected flag is set to true then it will set all 'undefined' values to the previously seen value
@@ -201,12 +201,14 @@ function getRandomColour() {
   *       2) data: [ ['Date', 'mexTaco', 'pierogi'] ['1/1/2016', 10, 20], ['1/2/2016', 30, 20]]
   *       3) connected: false
   * Output:
-  *       { maxTime: 30, mexTaco: [10, 30] }
+  *       { maxTime: 30, mexTaco: [10, 30], lowerBound: 0, upperBound: 1}
 **/
 function parseChartDataForUser(userIndex, data, connected) {
-  var time, userData = {}, timeArray = [];
+  var time, userData = {}, plankTimes = [], xValues = [], yValues = [];
   var user = data[0][userIndex];
   var lastKnownTime = undefined;
+  var lowerBound = undefined;
+  var upperBound = 0;
   var maxTime = 0;
 
   for (var i =1; i < data.length; i++) {
@@ -215,14 +217,22 @@ function parseChartDataForUser(userIndex, data, connected) {
     // Sanitize the time if its not defined and we want to connect missing days
     if(!time && lastKnownTime && connected) { time = lastKnownTime }
     else if(time) {
+      if(!lowerBound) { lowerBound = i }
       maxTime = Math.max(maxTime, time);
       lastKnownTime = time;
+      upperBound = i;
+      xValues.push(i);
+      yValues.push(time);
     }
-
-    timeArray.push(time);
+    plankTimes.push(time);
   }
-  userData[user] = timeArray;
+
+  userData['xValues'] = xValues;
+  userData['yValues'] = yValues;
+  userData['plankTimes'] = plankTimes;
   userData['maxTime'] = maxTime;
+  userData['lowerBound'] = lowerBound;
+  userData['upperBound'] = upperBound;
 
   return userData;
 }
@@ -238,6 +248,7 @@ function parseChartDataForUser(userIndex, data, connected) {
 function parseChartData(data, callback) {
   var labelRow = data[0];
   var parsedChartData = {};
+  parsedChartData['users'] = {};
   var maxTime = 0;
 
   for(var userIndex =1; userIndex < labelRow.length; userIndex++) {
@@ -245,7 +256,12 @@ function parseChartData(data, callback) {
     var userName = data[0][userIndex];
 
     maxTime = Math.max(maxTime, parsedUserData.maxTime);
-    parsedChartData[userName] = parsedUserData[userName];
+    parsedChartData['users'][userName] = {};
+    parsedChartData['users'][userName]['xValues'] = parsedUserData['xValues'];
+    parsedChartData['users'][userName]['yValues'] = parsedUserData['yValues'];
+    parsedChartData['users'][userName]['plankTimes'] = parsedUserData['plankTimes'];
+    parsedChartData['users'][userName]['lowerBound'] = parsedUserData.lowerBound;
+    parsedChartData['users'][userName]['upperBound'] = parsedUserData.upperBound;
   }
   parsedChartData.maxTime = maxTime;
 
@@ -256,25 +272,34 @@ function parseChartData(data, callback) {
   * Will accumulate each person's data and parse it into a format that the GoogleChart object can easily render with
   * Input:
   *       1) data: [ ['Date', 'mexTaco', 'pierogi', 'hotSauce'] ['1/1/2016', 10, 20, 30], ['1/2/2016', 30, 20, 40]]
-  *       2) filters: ['mexTaco', 'hotSauce']
+  *       2) users: ['mexTaco', 'hotSauce']
   *       3) callback
   * Output:
-  *       { maxTime: 40, mexTaco: [10, 30], hotSauce: [30, 40] } -> into callback
+  *       { maxTime: 40, { users: { mexTaco: plankTimes[10, 30], hotSauce: [30, 40] } } -> into callback
 **/
-function parseChartDataWithFilters(data, filters, callback) {
+function parseChartDataWithUsers(data, users, callback) {
   var labelRow = data[0];
   var parsedChartData = {};
+  parsedChartData['users'] = {};
   var maxTime = 0;
 
-  for(var i in filters) {
-    var userIndex = filters[i];
+  var userIndexes = extractUserIndexes(data, users);
+
+  for(var i in userIndexes) {
+    var userIndex = userIndexes[i];
     var parsedUserData = parseChartDataForUser(userIndex, data, true);
     var userName = data[0][userIndex];
 
     maxTime = Math.max(maxTime, parsedUserData.maxTime);
-    parsedChartData[userName] = parsedUserData[userName];
+    parsedChartData['users'][userName] = {};
+    parsedChartData['users'][userName]['xValues'] = parsedUserData['xValues'];
+    parsedChartData['users'][userName]['yValues'] = parsedUserData['yValues'];
+    parsedChartData['users'][userName]['plankTimes'] = parsedUserData['plankTimes'];
+    parsedChartData['users'][userName]['lowerBound'] = parsedUserData.lowerBound;
+    parsedChartData['users'][userName]['upperBound'] = parsedUserData.upperBound;
   }
   parsedChartData.maxTime = maxTime;
+  parsedChartData.totalBound = data.length - 1;
   callback(null, parsedChartData);
 }
 
@@ -378,6 +403,40 @@ function generateChartURL(parsedRows, callback) {
   }
 };
 
+
+/**
+  *
+**/
+function interpolateData(data, numUsers, callback) {
+  var userName;
+  var interpolatedData = {};
+  for(var key in data.users) {
+    var interpolatedDataSet = [];
+    userName = key;
+    var userData = data.users[key];
+    var lowerBound = userData.lowerBound;
+    var upperBound = userData.upperBound;
+    var totalBound = data.totalBound;
+
+    var numberOfDataPoints = Math.floor(4000/numUsers);
+    var incrementer = totalBound / numberOfDataPoints;
+
+    for(var x = 1; x < totalBound; x+= incrementer) {
+      if (x >= lowerBound && x <= upperBound) {
+        var y = Math.round(spline(x, userData.xValues, userData.yValues));
+        interpolatedDataSet.push(y);
+      } else {
+        interpolatedDataSet.push(undefined);
+      }
+    }
+    interpolatedData[userName] = {};
+    interpolatedData[userName]['plankTimes'] = interpolatedDataSet;
+  }
+
+  interpolatedData['maxTime'] = data.maxTime;
+  callback(null, interpolatedData);
+}
+
 // ****************************************************************************
 
 class GoogleSheet {
@@ -408,44 +467,6 @@ class GoogleSheet {
     });
   }
 
-  chart(users) {
-    return new Promise(function(resolve, reject) {
-      async.waterfall([
-          function(callback){
-            readCredentials(callback);
-          },
-          function(credentials, callback) {
-            evaluateCredentials(credentials, callback);
-          },
-          function(oauth2Client, callback) {
-            setTokenIntoClient(oauth2Client, callback);
-          },
-          function(oauth, callback) {
-            getRowsFromSpreadsheet(oauth, callback);
-          },
-          function(oauth, rows, callback) {
-            var userFilters = extractUserIndexes(rows, users);
-
-            if(userFilters.length > 0) {
-              parseChartDataWithFilters(rows, userFilters, callback);
-            } else {
-              parseChartData(rows, callback);
-            }
-          },
-          function(parsedRows, callback) {
-            generateChartURL(parsedRows, callback);
-          },
-          function(googleChartURL, callback) {
-            shortenURL(googleChartURL, callback);
-          }
-        ],
-        function finalCallback(err, url) {
-          if (err) { console.log(err); reject(err); }
-          else { console.log(url); resolve(url); }
-      });
-    });
-  }
-
   update(args) {
     return new Promise(function(resolve, reject) {
       async.waterfall([
@@ -471,6 +492,83 @@ class GoogleSheet {
       });
     });
   }
+
+  chart(users) {
+    return new Promise(function(resolve, reject) {
+      async.waterfall([
+          function(callback){
+            readCredentials(callback);
+          },
+          function(credentials, callback) {
+            evaluateCredentials(credentials, callback);
+          },
+          function(oauth2Client, callback) {
+            setTokenIntoClient(oauth2Client, callback);
+          },
+          function(oauth, callback) {
+            getRowsFromSpreadsheet(oauth, callback);
+          },
+          function(oauth, rows, callback) {
+            var userFilters = extractUserIndexes(rows, users);
+
+            if(userFilters.length > 0) {
+              parseChartDataWithUsers(rows, users, callback);
+            } else {
+              parseChartData(rows, callback);
+            }
+          },
+          function(parsedRows, callback) {
+            generateChartURL(parsedRows, callback);
+          },
+          function(googleChartURL, callback) {
+            shortenURL(googleChartURL, callback);
+          }
+        ],
+        function finalCallback(err, url) {
+          if (err) { console.log(err); reject(err); }
+          else { console.log(url); resolve(url); }
+      });
+    });
+  }
+
+  interpolateChart(users) {
+    return new Promise(function(resolve, reject) {
+      async.waterfall([
+          function(callback){
+            readCredentials(callback);
+          },
+          function(credentials, callback) {
+            evaluateCredentials(credentials, callback);
+          },
+          function(oauth2Client, callback) {
+            setTokenIntoClient(oauth2Client, callback);
+          },
+          function(oauth, callback) {
+            getRowsFromSpreadsheet(oauth, callback);
+          },
+          function(oauth, rows, callback) {
+            if(users.length > 0) {
+              parseChartDataWithUsers(rows, users, callback);
+            } else {
+              parseChartData(rows, callback);
+            }
+          },
+          function(parsedRows, callback) {
+            interpolateData(parsedRows, users.length, callback);
+          },
+          function(interpolatedData, callback) {
+            generateChartURL(interpolatedData, callback);
+          },
+          function(googleChartURL, callback) {
+            shortenURL(googleChartURL, callback);
+          }
+        ],
+        function finalCallback(err, url) {
+          if (err) { console.log(err); reject(err); }
+          else { console.log(url); resolve(url); }
+      });
+    });
+  }
 }
 
 //  ************************ GOOGLE CHART *******************************
@@ -481,15 +579,14 @@ class GoogleSheet {
     dude: [array of values],
     dudester: [array of values],
     dudette: [array of values]
-  },
-  ['dude', 'dudester', 'dudette']
+  }
 */
 class GoogleChart {
-  constructor(chartData, filters) {
-    this.chartData = chartData;
+  constructor(chartData) {
+    if (chartData.users) { this.chartData = chartData.users; } else { this.chartData = chartData }
     this.maxTime = chartData.maxTime;
-    this.filters = filters;
     delete chartData.maxTime;
+    delete chartData.totalBound;
   }
 
   generateChartColours() {
@@ -505,19 +602,13 @@ class GoogleChart {
     return chartColoursString;
   }
 
-  generateInterpolatedChartData() {
-    var dataStringSet = [];
-
-
-  }
-
   generateEncodedChartData() {
     var dataStringSet = [];
 
     // iterate over each set of data
     for(var key in this.chartData) {
       if(this.chartData.hasOwnProperty(key)) {
-        var encodedDataString = this.simpleEncode(this.chartData[key], this.maxTime);
+        var encodedDataString = this.simpleEncode(this.chartData[key]['plankTimes'], this.maxTime);
         dataStringSet.push(encodedDataString);
       }
     }

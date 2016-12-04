@@ -22,6 +22,8 @@ class Parser {
           return this.parseUpdate();
         case 'chart':
           return this.parseChart();
+        case 'interpolate':
+          return this.parseInterpolate();
         default:
           return this.parseDefault();
       }
@@ -70,6 +72,13 @@ class Parser {
     var matchedUsers = this.input.match(regexUsers);
 
     return { command: 'chart', args: matchedUsers };
+  }
+
+  parseInterpolate() {
+    var regexUsers = /([a-zA-z]+)/gi
+    var matchedUsers = this.input.match(regexUsers).slice(1);
+
+    return { command: 'interpolate', args: matchedUsers };
   }
 
   parseDefault() {
