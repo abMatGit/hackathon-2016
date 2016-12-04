@@ -4,11 +4,6 @@ var spline = require('cubic-spline');
 class GoogleSheetParser {
   constructor(data) {
     this.data = data;
-    if(this.data.filters.length == 0) {
-      this.users = this.extractUsers([], true);
-    } else {
-      this.users = this.extractUsers(this.data.filters, false);
-    }
   }
 
   /**
@@ -22,12 +17,10 @@ class GoogleSheetParser {
   parse(options) {
     var parsedData = { users: {} };
     var totalMaxTime = 0;
-    var users = [];
     var connected = !options.interpolate
-    var extractAllUsers = (this.data.filters.length == 0);
 
     // if our filters length is zero then we parse all user data
-    users = this.extractUsers(this.data.filters, extractAllUsers);
+    var users = this.extractUsers(this.data.filters);
 
     var totalBound = this.data.rows.length -1;
     var numUsers = users.length;
@@ -60,7 +53,7 @@ class GoogleSheetParser {
   **/
   interpolateData(userData, numUsers, totalBound) {
     var interpolatedData = [];
-    var numberOfDataPoints = Math.floor(1900/numUsers);
+    var numberOfDataPoints = Math.floor(1700/numUsers);
     var incrementer = totalBound / numberOfDataPoints;
 
     for(var x = 1; x < totalBound; x+= incrementer) {
@@ -81,14 +74,13 @@ class GoogleSheetParser {
   * This should parse out the raw data and return the array of indexes corresponding to each filter name
   * Input:
   *       filters:          ['not_found', 'dude_found', 'your_mom_found']
-  *       extractAllUsers:  false
   * Output:
   *         [
   *           { name: dude_found, index: 1 },
   *           { name: your_mom_found, index: 13 }
   *         ]
   */
-  extractUsers(filters, extractAllUsers) {
+  extractUsers(filters) {
     var userRows = this.data.rows[0];
     var extractedUsers = [];
 
@@ -96,7 +88,10 @@ class GoogleSheetParser {
       var name = userRows[i].toLowerCase();
       var user = {};
 
-      if(extractAllUsers || _.contains(filters, name)) {
+      // If we have no filters, then we extract all viable users
+      var extractUser = (filters.length == 0 && i > 1) || _.contains(filters, name);
+
+      if(extractUser) {
         user.name = name;
         user.index = i;
         extractedUsers.push(user);
